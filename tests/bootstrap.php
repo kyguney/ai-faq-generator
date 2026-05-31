@@ -12,6 +12,7 @@ if (!defined('AFG_PLUGIN_PATH')) {
 
 // Load plugin classes.
 require_once AFG_PLUGIN_PATH . 'includes/class-loader.php';
+require_once AFG_PLUGIN_PATH . 'includes/interfaces/class-ai-provider-interface.php';
 require_once AFG_PLUGIN_PATH . 'admin/class-admin.php';
 require_once AFG_PLUGIN_PATH . 'admin/class-settings.php';
 

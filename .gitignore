@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build output
+build/
+
+# WordPress environment
+wp-env-home/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# PHPUnit cache
+.phpunit.cache/
+.phpunit.result.cache
+
+# Composer
+composer.lock
+
+# Debug logs
+*.log
+debug.log
+
+# OS files
+Thumbs.db
+node_modules
+
+# Languages
+languages/*.po
+languages/*.mo
+languages/*.php
+languages/*.po~
+languages/*.pot~
+dist/

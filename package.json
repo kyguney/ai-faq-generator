@@ -1,0 +1,16 @@
+{
+    "name": "@wpbits/ai-faq-generator",
+    "version": "1.0.0",
+    "description": "AI-powered FAQ generation for WordPress",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "main": "build/index.js",
+    "scripts": {
+        "build": "wp-scripts build",
+        "dev": "wp-scripts start",
+        "test:unit": "wp-scripts test-unit --env=jsdom"
+    },
+    "devDependencies": {
+        "@wordpress/scripts": "^30.0.0"
+    }
+}

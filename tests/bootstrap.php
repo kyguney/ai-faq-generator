@@ -28,6 +28,10 @@ global $afg_test_menu_pages;
 $afg_test_menu_pages = [];
 
 /** @var array<int, array<string, mixed>> */
+global $afg_test_submenu_pages;
+$afg_test_submenu_pages = [];
+
+/** @var array<int, array<string, mixed>> */
 global $afg_test_registered_settings;
 $afg_test_registered_settings = [];
 
@@ -81,6 +85,30 @@ if (!function_exists('add_menu_page')) {
             'menu_slug' => $menu_slug,
             'callback' => $callback,
             'icon_url' => $icon_url,
+            'position' => $position,
+        ];
+        return $menu_slug;
+    }
+}
+
+if (!function_exists('add_submenu_page')) {
+    function add_submenu_page(
+        string $parent_slug,
+        string $page_title,
+        string $menu_title,
+        string $capability,
+        string $menu_slug,
+        $callback = '',
+        ?int $position = null
+    ): string|false {
+        global $afg_test_submenu_pages;
+        $afg_test_submenu_pages[] = [
+            'parent_slug' => $parent_slug,
+            'page_title' => $page_title,
+            'menu_title' => $menu_title,
+            'capability' => $capability,
+            'menu_slug' => $menu_slug,
+            'callback' => $callback,
             'position' => $position,
         ];
         return $menu_slug;

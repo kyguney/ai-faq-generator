@@ -22,6 +22,7 @@ class AdminTest extends TestCase
         // Reset all global stub trackers before each test.
         global $afg_test_actions,
                $afg_test_menu_pages,
+               $afg_test_submenu_pages,
                $afg_test_registered_settings,
                $afg_test_settings_sections,
                $afg_test_current_user_can,
@@ -31,6 +32,7 @@ class AdminTest extends TestCase
 
         $afg_test_actions = [];
         $afg_test_menu_pages = [];
+        $afg_test_submenu_pages = [];
         $afg_test_registered_settings = [];
         $afg_test_settings_sections = [];
         $afg_test_current_user_can = true;
@@ -74,7 +76,29 @@ class AdminTest extends TestCase
         $menu = $afg_test_menu_pages[0];
         $this->assertSame('ai-faq-generator', $menu['menu_slug']);
         $this->assertSame('manage_options', $menu['capability']);
-        $this->assertSame('AI FAQ Generator', $menu['menu_title']);
+        $this->assertSame('AI FAQ', $menu['menu_title']);
+        $this->assertSame('dashicons-format-chat', $menu['icon_url']);
+    }
+
+    /**
+     * Validates: Requirement 4.1
+     * Test that add_admin_menu registers a "Settings" submenu under the top-level page.
+     */
+    #[Test]
+    public function add_admin_menu_registers_settings_submenu(): void
+    {
+        $this->admin->add_admin_menu();
+
+        global $afg_test_submenu_pages;
+
+        $this->assertCount(1, $afg_test_submenu_pages);
+
+        $submenu = $afg_test_submenu_pages[0];
+        $this->assertSame('ai-faq-generator', $submenu['parent_slug']);
+        $this->assertSame('AI FAQ Generator Settings', $submenu['page_title']);
+        $this->assertSame('Settings', $submenu['menu_title']);
+        $this->assertSame('manage_options', $submenu['capability']);
+        $this->assertSame('ai-faq-generator', $submenu['menu_slug']);
     }
 
     /**

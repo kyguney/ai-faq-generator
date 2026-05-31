@@ -1,0 +1,27 @@
+.afg-settings-wrap {
+	max-width: 800px;
+	margin-top: 20px;
+
+	.components-panel {
+		margin-bottom: 20px;
+	}
+
+	.components-panel__body {
+		padding: 16px;
+	}
+
+	.components-base-control {
+		margin-bottom: 16px;
+	}
+
+	.components-notice {
+		margin: 0 0 20px;
+	}
+}
+
+.afg-settings-submit {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-top: 16px;
+}

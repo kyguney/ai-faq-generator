@@ -10,11 +10,10 @@ if (!defined('AFG_PLUGIN_PATH')) {
     define('AFG_PLUGIN_PATH', dirname(__DIR__) . '/');
 }
 
-// Load the Loader class directly (no Composer autoload in plugin yet).
+// Load plugin classes.
 require_once AFG_PLUGIN_PATH . 'includes/class-loader.php';
-
-// Load the Admin class.
 require_once AFG_PLUGIN_PATH . 'admin/class-admin.php';
+require_once AFG_PLUGIN_PATH . 'admin/class-settings.php';
 
 // ─── WordPress function stubs for unit testing ───────────────────────────────
 // These stubs record calls so tests can assert hook registrations and behavior.
@@ -54,6 +53,28 @@ $afg_test_do_settings_sections_calls = [];
 /** @var int */
 global $afg_test_submit_button_calls;
 $afg_test_submit_button_calls = 0;
+
+/** @var array<string, mixed> In-memory options store for testing */
+global $afg_test_options;
+$afg_test_options = [];
+
+/** @var array<int, array<string, mixed>> */
+global $afg_test_rest_routes;
+$afg_test_rest_routes = [];
+
+/** @var array<int, array<string, mixed>> */
+global $afg_test_enqueued_scripts;
+$afg_test_enqueued_scripts = [];
+
+/** @var array<int, array<string, mixed>> */
+global $afg_test_enqueued_styles;
+$afg_test_enqueued_styles = [];
+
+/** @var array<int, array<string, mixed>> */
+global $afg_test_localized_scripts;
+$afg_test_localized_scripts = [];
+
+// ─── WordPress core function stubs ───────────────────────────────────────────
 
 if (!function_exists('add_action')) {
     function add_action(string $hook, $callback, int $priority = 10, int $accepted_args = 1): void
@@ -169,5 +190,191 @@ if (!function_exists('submit_button')) {
     {
         global $afg_test_submit_button_calls;
         $afg_test_submit_button_calls++;
+    }
+}
+
+// ─── WordPress Options API stubs ─────────────────────────────────────────────
+
+if (!function_exists('get_option')) {
+    function get_option(string $option, $default = false)
+    {
+        global $afg_test_options;
+        return $afg_test_options[$option] ?? $default;
+    }
+}
+
+if (!function_exists('update_option')) {
+    function update_option(string $option, $value, $autoload = null): bool
+    {
+        global $afg_test_options;
+        $afg_test_options[$option] = $value;
+        return true;
+    }
+}
+
+// ─── WordPress sanitization stubs ────────────────────────────────────────────
+
+if (!function_exists('sanitize_text_field')) {
+    /**
+     * Mimics WordPress sanitize_text_field() behavior:
+     * - Strips HTML tags
+     * - Removes octets
+     * - Removes line breaks and tabs (replaced with space)
+     * - Collapses multiple whitespace into single space
+     * - Trims leading/trailing whitespace
+     */
+    function sanitize_text_field(string $str): string
+    {
+        // Strip HTML tags (like wp_strip_all_tags).
+        $filtered = strip_tags($str);
+        // Remove percent-encoded octets.
+        $filtered = preg_replace('/%[a-f0-9]{2}/i', '', $filtered);
+        // Replace any whitespace character (including \n, \r, \t, \v, \f) with a space.
+        $filtered = preg_replace('/[\s]+/u', ' ', $filtered);
+        // Trim leading/trailing whitespace.
+        $filtered = trim($filtered);
+        return $filtered;
+    }
+}
+
+// ─── WordPress REST API stubs ────────────────────────────────────────────────
+
+if (!function_exists('register_rest_route')) {
+    function register_rest_route(string $namespace, string $route, array $args = [], bool $override = false): bool
+    {
+        global $afg_test_rest_routes;
+        $afg_test_rest_routes[] = [
+            'namespace' => $namespace,
+            'route'     => $route,
+            'args'      => $args,
+        ];
+        return true;
+    }
+}
+
+// ─── WordPress enqueue and localize stubs ────────────────────────────────────
+
+if (!function_exists('wp_enqueue_script')) {
+    function wp_enqueue_script(string $handle, string $src = '', array $deps = [], $ver = false, $args = []): void
+    {
+        global $afg_test_enqueued_scripts;
+        $afg_test_enqueued_scripts[] = [
+            'handle' => $handle,
+            'src'    => $src,
+            'deps'   => $deps,
+            'ver'    => $ver,
+            'args'   => $args,
+        ];
+    }
+}
+
+if (!function_exists('wp_enqueue_style')) {
+    function wp_enqueue_style(string $handle, string $src = '', array $deps = [], $ver = false, string $media = 'all'): void
+    {
+        global $afg_test_enqueued_styles;
+        $afg_test_enqueued_styles[] = [
+            'handle' => $handle,
+            'src'    => $src,
+            'deps'   => $deps,
+            'ver'    => $ver,
+            'media'  => $media,
+        ];
+    }
+}
+
+if (!function_exists('wp_localize_script')) {
+    function wp_localize_script(string $handle, string $object_name, array $l10n): bool
+    {
+        global $afg_test_localized_scripts;
+        $afg_test_localized_scripts[] = [
+            'handle'      => $handle,
+            'object_name' => $object_name,
+            'l10n'        => $l10n,
+        ];
+        return true;
+    }
+}
+
+if (!function_exists('plugins_url')) {
+    function plugins_url(string $path = '', string $plugin = ''): string
+    {
+        return 'https://example.com/wp-content/plugins/ai-faq-generator/' . ltrim($path, '/');
+    }
+}
+
+if (!function_exists('wp_create_nonce')) {
+    function wp_create_nonce(string $action = ''): string
+    {
+        return 'test_nonce_' . $action;
+    }
+}
+
+if (!function_exists('rest_url')) {
+    function rest_url(string $path = ''): string
+    {
+        return 'https://example.com/wp-json/' . ltrim($path, '/');
+    }
+}
+
+// ─── WordPress REST API class stubs ──────────────────────────────────────────
+
+if (!class_exists('WP_REST_Request')) {
+    class WP_REST_Request
+    {
+        private array $params = [];
+        private array $json_params = [];
+
+        public function __construct(string $method = 'GET', string $route = '')
+        {
+        }
+
+        public function set_param(string $key, $value): void
+        {
+            $this->params[$key] = $value;
+        }
+
+        public function get_param(string $key)
+        {
+            return $this->params[$key] ?? null;
+        }
+
+        public function set_body(string $body): void
+        {
+            $this->json_params = json_decode($body, true) ?? [];
+        }
+
+        public function set_json_params(array $params): void
+        {
+            $this->json_params = $params;
+        }
+
+        public function get_json_params(): array
+        {
+            return $this->json_params;
+        }
+    }
+}
+
+if (!class_exists('WP_REST_Response')) {
+    class WP_REST_Response
+    {
+        private $data;
+        private int $status;
+
+        public function __construct($data = null, int $status = 200)
+        {
+            $this->data = $data;
+            $this->status = $status;
+        }
+
+        public function get_data()
+        {
+            return $this->data;
+        }
+
+        public function get_status(): int
+        {
+            return $this->status;
+        }
     }
 }

@@ -41,5 +41,5 @@ function init(): void
     $loader->init();
 }
 
-// Start the plugin
-init();
+// Start the plugin after WordPress is fully loaded
+add_action('plugins_loaded', __NAMESPACE__ . '\\init');

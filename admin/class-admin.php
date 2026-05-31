@@ -15,6 +15,7 @@ class Admin
     {
         add_action('admin_menu', [$this, 'add_admin_menu']);
         add_action('admin_init', [$this, 'register_settings']);
+        add_action('admin_enqueue_scripts', [$this, 'enqueue_settings_assets']);
     }
 
     public function add_admin_menu(): void
@@ -52,14 +53,8 @@ class Admin
 
     public function register_settings(): void
     {
-        register_setting('afg_settings', 'afg_settings');
-
-        add_settings_section(
-            'afg_main_section',
-            'Main Settings',
-            '__return_false',
-            'ai-faq-generator'
-        );
+        // Settings are now managed via REST API (class-settings.php).
+        // This method is kept for backward compatibility with the admin_init hook.
     }
 
     public function render_admin_page(): void
@@ -82,11 +77,42 @@ class Admin
 
         echo '<div class="wrap">';
         echo '<h1>AI FAQ Generator Settings</h1>';
-        echo '<form method="post" action="options.php">';
-        settings_fields('afg_settings');
-        do_settings_sections('ai-faq-generator');
-        submit_button();
-        echo '</form>';
+        echo '<div id="afg-settings-root"></div>';
         echo '</div>';
+    }
+
+    public function enqueue_settings_assets(string $hook_suffix): void
+    {
+        if ($hook_suffix !== 'ai-faq_page_ai-faq-generator-settings') {
+            return;
+        }
+
+        $asset_file = AFG_PLUGIN_PATH . 'build/settings.asset.php';
+
+        if (!file_exists($asset_file)) {
+            return;
+        }
+
+        $asset = require $asset_file;
+
+        wp_enqueue_script(
+            'afg-settings',
+            plugins_url('build/settings.js', dirname(__FILE__)),
+            $asset['dependencies'],
+            $asset['version'],
+            true
+        );
+
+        wp_enqueue_style(
+            'afg-settings',
+            plugins_url('build/settings.css', dirname(__FILE__)),
+            [],
+            $asset['version']
+        );
+
+        wp_localize_script('afg-settings', 'afgSettings', [
+            'restUrl' => rest_url('ai-faq-generator/v1'),
+            'nonce'   => wp_create_nonce('wp_rest'),
+        ]);
     }
 }

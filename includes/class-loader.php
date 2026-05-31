@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace WPBits\AiFaqGenerator\Includes;
 
 use WPBits\AiFaqGenerator\Admin\Admin;
+use WPBits\AiFaqGenerator\Admin\Settings;
 
 class Loader
 {
@@ -19,6 +20,7 @@ class Loader
     {
         $this->classes = [
             'WPBits\\AiFaqGenerator\\Admin\\Admin' => AFG_PLUGIN_PATH . 'admin/class-admin.php',
+            'WPBits\\AiFaqGenerator\\Admin\\Settings' => AFG_PLUGIN_PATH . 'admin/class-settings.php',
         ];
     }
 
@@ -26,7 +28,12 @@ class Loader
     {
         spl_autoload_register([$this, 'autoload']);
 
-        // Initialize admin if in admin area
+        // Settings REST routes must be registered on all requests (not just admin)
+        // because REST API requests don't pass is_admin() check.
+        $settings = new Settings();
+        $settings->init();
+
+        // Initialize admin-only functionality
         if (is_admin()) {
             $admin = new Admin();
             $admin->init();

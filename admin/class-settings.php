@@ -21,6 +21,7 @@ class Settings
         'model'       => 'gpt-4o',
         'temperature' => 0.7,
         'faq_count'   => 5,
+        'base_url'    => 'https://api.openai.com',
     ];
 
     const ALLOWED_PROVIDERS = [
@@ -89,6 +90,7 @@ class Settings
             'model'       => $settings['model'],
             'temperature' => (float) $settings['temperature'],
             'faq_count'   => (int) $settings['faq_count'],
+            'base_url'    => $settings['base_url'],
             'has_api_key' => $has_api_key,
         ];
 
@@ -118,6 +120,7 @@ class Settings
                 'model'       => $sanitized['model'],
                 'temperature' => (float) $sanitized['temperature'],
                 'faq_count'   => (int) $sanitized['faq_count'],
+                'base_url'    => $sanitized['base_url'],
                 'has_api_key' => $has_api_key,
             ],
         ];
@@ -181,6 +184,18 @@ class Settings
             $sanitized['api_key'] = sanitize_text_field($input['api_key']);
         } else {
             $sanitized['api_key'] = $current['api_key'];
+        }
+
+        // Base URL: validate with esc_url_raw, reject empty/invalid
+        if (isset($input['base_url'])) {
+            $url = esc_url_raw($input['base_url']);
+            if (!empty($url)) {
+                $sanitized['base_url'] = $url;
+            } else {
+                $sanitized['base_url'] = $current['base_url'];
+            }
+        } else {
+            $sanitized['base_url'] = $current['base_url'];
         }
 
         return $sanitized;

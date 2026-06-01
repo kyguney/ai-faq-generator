@@ -379,3 +379,89 @@ if (!class_exists('WP_REST_Response')) {
         }
     }
 }
+
+// ─── WordPress HTTP API stubs ────────────────────────────────────────────────
+
+/** @var array|null Captured arguments from the last wp_remote_post call */
+global $afg_test_wp_remote_post_args;
+$afg_test_wp_remote_post_args = null;
+
+/** @var mixed Value to return from wp_remote_post stub */
+global $afg_test_wp_remote_post_return;
+$afg_test_wp_remote_post_return = [];
+
+if (!function_exists('wp_remote_post')) {
+    function wp_remote_post(string $url, array $args = [])
+    {
+        global $afg_test_wp_remote_post_args, $afg_test_wp_remote_post_return;
+        $afg_test_wp_remote_post_args = ['url' => $url, 'args' => $args];
+        return $afg_test_wp_remote_post_return;
+    }
+}
+
+if (!function_exists('wp_remote_retrieve_response_code')) {
+    function wp_remote_retrieve_response_code($response)
+    {
+        return $response['response']['code'] ?? 0;
+    }
+}
+
+if (!function_exists('wp_remote_retrieve_body')) {
+    function wp_remote_retrieve_body($response)
+    {
+        return $response['body'] ?? '';
+    }
+}
+
+// ─── WordPress URL sanitization stub ─────────────────────────────────────────
+
+if (!function_exists('esc_url_raw')) {
+    function esc_url_raw($url, $protocols = null)
+    {
+        $url = trim($url);
+        if (empty($url)) {
+            return '';
+        }
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            return '';
+        }
+        return $url;
+    }
+}
+
+// ─── WP_Error class stub ─────────────────────────────────────────────────────
+
+if (!class_exists('WP_Error')) {
+    class WP_Error
+    {
+        private string $code;
+        private string $message;
+
+        public function __construct(string $code = '', string $message = '')
+        {
+            $this->code = $code;
+            $this->message = $message;
+        }
+
+        public function get_error_message(): string
+        {
+            return $this->message;
+        }
+
+        public function get_error_code(): string
+        {
+            return $this->code;
+        }
+    }
+}
+
+if (!function_exists('is_wp_error')) {
+    function is_wp_error($thing): bool
+    {
+        return $thing instanceof WP_Error;
+    }
+}
+
+// ─── Load OpenAIClient (after WP stubs are defined) ──────────────────────────
+
+require_once AFG_PLUGIN_PATH . 'includes/class-openai-client.php';

@@ -43,6 +43,7 @@ class SettingsSanitizerTest extends TestCase
             'model'       => 'gpt-4o',
             'temperature' => 0.7,
             'faq_count'   => 5,
+            'base_url'    => 'https://api.openai.com',
         ], Settings::DEFAULTS);
     }
 

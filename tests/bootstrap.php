@@ -473,6 +473,31 @@ if (!function_exists('is_wp_error')) {
     }
 }
 
+// ─── WP_Post class stub ──────────────────────────────────────────────────────
+
+if (!class_exists('WP_Post')) {
+    class WP_Post
+    {
+        public string $post_title = '';
+        public string $post_content = '';
+        public string $post_status = '';
+    }
+}
+
+// ─── get_post function stub ──────────────────────────────────────────────────
+
+/** @var array<int, WP_Post|null> In-memory posts store for testing */
+global $afg_test_posts;
+$afg_test_posts = [];
+
+if (!function_exists('get_post')) {
+    function get_post(int $post_id): ?WP_Post
+    {
+        global $afg_test_posts;
+        return $afg_test_posts[$post_id] ?? null;
+    }
+}
+
 // ─── Load OpenAIClient (after WP stubs are defined) ──────────────────────────
 
 require_once AFG_PLUGIN_PATH . 'includes/class-openai-client.php';
@@ -480,3 +505,7 @@ require_once AFG_PLUGIN_PATH . 'includes/class-openai-client.php';
 // ─── Load Prompt_Builder service ─────────────────────────────────────────────
 
 require_once __DIR__ . '/../includes/services/class-prompt-builder.php';
+
+// ─── Load Faq_Generator service ──────────────────────────────────────────────
+
+require_once AFG_PLUGIN_PATH . 'includes/services/class-faq-generator.php';

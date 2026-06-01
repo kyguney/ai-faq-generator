@@ -2,6 +2,7 @@
  * Mock for @wordpress/data.
  */
 const useSelect = jest.fn( () => null );
+const useDispatch = jest.fn( () => ( {} ) );
 
 const insertBlocks = jest.fn();
 
@@ -16,8 +17,12 @@ const dispatch = jest.fn( ( storeName ) => {
 	};
 } );
 
+const select = jest.fn( () => ( {} ) );
+
 module.exports = {
 	useSelect,
+	useDispatch,
 	dispatch,
+	select,
 	__mockInsertBlocks: insertBlocks,
 };

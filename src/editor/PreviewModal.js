@@ -125,7 +125,7 @@ function PreviewModal( { faqs, postId, onClose, onInsertSuccess } ) {
 		try {
 			const blocks = faqsToBlocks( localFaqs );
 			dispatch( 'core/block-editor' ).insertBlocks( blocks );
-			onInsertSuccess( localFaqs );
+			onInsertSuccess( localFaqs, blocks[ 0 ].clientId );
 		} catch ( err ) {
 			setError( 'Failed to insert blocks. Please try again.' );
 		}

@@ -1,60 +1,18 @@
 /**
  * EditorPanel component — AI FAQ Generator sidebar panel.
+ *
+ * Consumes the useBlockInsertState hook for state machine logic and renders
+ * UI conditionally based on the current sidebar state (empty, has_faqs, block_inserted).
  */
 import { PluginDocumentSettingPanel } from '@wordpress/editor';
 import { Button, Spinner } from '@wordpress/components';
-import { useEntityProp } from '@wordpress/core-data';
-import { useSelect, dispatch } from '@wordpress/data';
+import { useSelect } from '@wordpress/data';
 import { useState } from '@wordpress/element';
 import { PreviewModal } from './PreviewModal';
+import { useBlockInsertState } from './useBlockInsertState';
 import './editor.scss';
 
-/**
- * Parse FAQ meta value into an array.
- *
- * @param {string} raw Raw meta value (JSON string or empty).
- * @return {Array|null} Parsed FAQ array or null if invalid.
- */
-function parseFaqMeta( raw ) {
-	if ( ! raw ) {
-		return null;
-	}
-	try {
-		const parsed = JSON.parse( raw );
-		if ( Array.isArray( parsed ) && parsed.length > 0 ) {
-			return parsed;
-		}
-	} catch ( e ) {
-		// Invalid JSON — treat as no data.
-	}
-	return null;
-}
-
-/**
- * Show a WordPress notice via the core/notices store.
- *
- * @param {string} type    Notice type: 'success' or 'error'.
- * @param {string} message Notice message.
- * @param {number} autoDismiss Auto-dismiss duration in milliseconds.
- */
-function showNotice( type, message, autoDismiss ) {
-	dispatch( 'core/notices' ).createNotice( type, message, {
-		isDismissible: true,
-		type: 'snackbar',
-		__unstableHTML: false,
-		actions: [],
-		// Auto-dismiss via explicit timeout option.
-		explicitDismiss: false,
-	} );
-
-	// Auto-dismiss after the specified duration.
-	setTimeout( () => {
-		dispatch( 'core/notices' ).removeNotice( message );
-	}, autoDismiss );
-}
-
 function EditorPanel() {
-	const [ isLoading, setIsLoading ] = useState( false );
 	const [ isModalOpen, setIsModalOpen ] = useState( false );
 	const [ generatedFaqs, setGeneratedFaqs ] = useState( [] );
 
@@ -72,76 +30,37 @@ function EditorPanel() {
 		return postTypeObject.supports?.[ 'custom-fields' ] ?? false;
 	}, [] );
 
-	// Get current post type for useEntityProp.
+	// Get current post type for hook params.
 	const postType = useSelect( ( select ) => {
 		return select( 'core/editor' ).getEditedPostAttribute( 'type' );
 	}, [] );
 
-	// Get current post ID for useEntityProp.
+	// Get current post ID for hook params.
 	const postId = useSelect( ( select ) => {
 		return select( 'core/editor' ).getCurrentPostId();
 	}, [] );
 
-	// Read the _aifaq_generated_faqs meta value via REST API.
-	const [ meta, setMeta ] = useEntityProp( 'postType', postType, 'meta', postId );
-	const rawFaqMeta = meta?.[ '_aifaq_generated_faqs' ] ?? '';
-	const faqs = parseFaqMeta( rawFaqMeta );
+	// Consume the block-insert state machine hook.
+	const [ state, actions ] = useBlockInsertState( postId, postType );
 
 	// Do not render if post type does not support custom-fields.
 	if ( ! supportsCustomFields ) {
 		return null;
 	}
 
+	// Determine if buttons should be disabled.
+	const isDisabled = state.isGenerating || state.isRegenerating;
+
 	/**
 	 * Handle Generate FAQs button click.
+	 * Calls the hook's handleGenerate which does the AJAX call,
+	 * then opens the PreviewModal with the returned FAQs.
 	 */
-	const handleGenerate = async () => {
-		setIsLoading( true );
-
-		const currentPostId = wp.data.select( 'core/editor' ).getCurrentPostId();
-
-		const body = new URLSearchParams();
-		body.append( 'action', 'aifaq_generate_faqs' );
-		body.append( '_ajax_nonce', aifaqEditor.nonce );
-		body.append( 'post_id', currentPostId );
-
-		const controller = new AbortController();
-		const timeoutId = setTimeout( () => controller.abort(), 30000 );
-
-		try {
-			const response = await fetch( aifaqEditor.ajaxurl, {
-				method: 'POST',
-				body,
-				credentials: 'same-origin',
-				signal: controller.signal,
-			} );
-
-			clearTimeout( timeoutId );
-
-			const result = await response.json();
-
-			if ( result.success ) {
-				const { faqs: newFaqs } = result.data;
-
-				// Open the preview modal with the generated FAQs.
-				setGeneratedFaqs( newFaqs );
-				setIsModalOpen( true );
-			} else {
-				// Error response from server.
-				const errorMessage =
-					result.data?.message || 'FAQ generation failed.';
-				showNotice( 'error', errorMessage, 8000 );
-			}
-		} catch ( error ) {
-			clearTimeout( timeoutId );
-			// Network error or timeout (AbortError).
-			showNotice(
-				'error',
-				'Could not reach the server. Please try again.',
-				8000
-			);
-		} finally {
-			setIsLoading( false );
+	const handleGenerateClick = async () => {
+		const faqs = await actions.handleGenerate();
+		if ( faqs ) {
+			setGeneratedFaqs( faqs );
+			setIsModalOpen( true );
 		}
 	};
 
@@ -151,32 +70,87 @@ function EditorPanel() {
 			title="AI FAQ Generator"
 		>
 			<div className="aifaq-editor-panel">
-				<div className="aifaq-generate-row">
-					<Button
-						variant="secondary"
-						onClick={ handleGenerate }
-						isBusy={ isLoading }
-						disabled={ isLoading }
-					>
-						{ isLoading ? 'Generating...' : 'Generate FAQs' }
-					</Button>
-					{ isLoading && <Spinner /> }
-				</div>
-				{ faqs && (
-					<p className="aifaq-faq-count">
-						{ `${ faqs.length } FAQs generated` }
-					</p>
+				{ state.error && (
+					<p className="aifaq-error">{ state.error }</p>
+				) }
+
+				{ /* Empty state: Generate FAQs button only */ }
+				{ state.sidebarState === 'empty' && (
+					<div className="aifaq-generate-row">
+						<Button
+							variant="secondary"
+							onClick={ handleGenerateClick }
+							isBusy={ state.isGenerating }
+							disabled={ isDisabled }
+						>
+							{ state.isGenerating
+								? 'Generating...'
+								: 'Generate FAQs' }
+						</Button>
+						{ state.isGenerating && <Spinner /> }
+					</div>
+				) }
+
+				{ /* Has FAQs state: FAQ count + Generate */ }
+				{ state.sidebarState === 'has_faqs' && (
+					<>
+						<p className="aifaq-faq-count">
+							{ `${ state.faqCount } FAQs generated` }
+						</p>
+						<div className="aifaq-generate-row">
+							<Button
+								variant="secondary"
+								onClick={ handleGenerateClick }
+								isBusy={ state.isGenerating }
+								disabled={ isDisabled }
+							>
+								{ state.isGenerating
+									? 'Generating...'
+									: 'Generate FAQs' }
+							</Button>
+							{ state.isGenerating && <Spinner /> }
+						</div>
+					</>
+				) }
+
+				{ /* Block inserted state: status + Regenerate + Edit Block on same row */ }
+				{ state.sidebarState === 'block_inserted' && (
+					<>
+						<p className="aifaq-block-inserted">
+							1 FAQ Block inserted
+						</p>
+						<div className="aifaq-actions-row">
+							<Button
+								variant="primary"
+								onClick={ actions.handleRegenerate }
+								isBusy={ state.isRegenerating }
+								disabled={ isDisabled }
+							>
+								{ state.isRegenerating
+									? 'Generating...'
+									: ( state.blockHasItems ? 'Regenerate' : 'Generate FAQs' ) }
+							</Button>
+							<Button
+								variant="secondary"
+								onClick={ actions.handleEditBlock }
+								disabled={ isDisabled }
+							>
+								Edit Block
+							</Button>
+						</div>
+					</>
 				) }
 			</div>
+
 			{ isModalOpen && (
 				<PreviewModal
 					faqs={ generatedFaqs }
 					postId={ postId }
 					onClose={ () => setIsModalOpen( false ) }
-					onInsertSuccess={ ( finalFaqs ) => {
-						setMeta( { ...meta, _aifaq_generated_faqs: JSON.stringify( finalFaqs ) } );
+					onInsertSuccess={ ( finalFaqs, clientId ) => {
+						actions.handleInsertSuccess( finalFaqs, clientId );
 						setIsModalOpen( false );
-						showNotice( 'success', `${ finalFaqs.length } FAQs inserted`, 5000 );
+						setGeneratedFaqs( [] );
 					} }
 				/>
 			) }

@@ -210,8 +210,8 @@ describe( 'PreviewModal', () => {
 			{ question: 'What is Gutenberg?', answer: 'The WordPress block editor.' },
 		] );
 
-		// onInsertSuccess should be called with the FAQ list
-		expect( onInsertSuccess ).toHaveBeenCalledWith( defaultFaqs );
+		// onInsertSuccess should be called with the FAQ list and clientId
+		expect( onInsertSuccess ).toHaveBeenCalledWith( defaultFaqs, 'mock-client-id' );
 	} );
 
 	it( 'close button calls onClose without side effects', () => {

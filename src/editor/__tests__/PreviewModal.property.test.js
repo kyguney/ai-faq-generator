@@ -832,9 +832,9 @@ describe( 'Property 6: Insertion uses final edited state', () => {
 							: faq
 					);
 
-					// Verify onInsertSuccess was called with the modified FAQ list
+					// Verify onInsertSuccess was called with the modified FAQ list and clientId
 					expect( onInsertSuccess ).toHaveBeenCalledTimes( 1 );
-					expect( onInsertSuccess ).toHaveBeenCalledWith( expectedFaqs );
+					expect( onInsertSuccess ).toHaveBeenCalledWith( expectedFaqs, 'mock-client-id' );
 
 					// Verify __mockInsertBlocks was called with blocks reflecting edited values
 					expect( __mockInsertBlocks ).toHaveBeenCalledTimes( 1 );
@@ -898,9 +898,9 @@ describe( 'Property 6: Insertion uses final edited state', () => {
 							: faq
 					);
 
-					// Verify onInsertSuccess was called with the modified FAQ list
+					// Verify onInsertSuccess was called with the modified FAQ list and clientId
 					expect( onInsertSuccess ).toHaveBeenCalledTimes( 1 );
-					expect( onInsertSuccess ).toHaveBeenCalledWith( expectedFaqs );
+					expect( onInsertSuccess ).toHaveBeenCalledWith( expectedFaqs, 'mock-client-id' );
 
 					// Verify __mockInsertBlocks was called with blocks reflecting edited values
 					expect( __mockInsertBlocks ).toHaveBeenCalledTimes( 1 );
@@ -976,7 +976,7 @@ describe( 'Property 6: Insertion uses final edited state', () => {
 
 					// Verify onInsertSuccess was called with the final modified FAQ list
 					expect( onInsertSuccess ).toHaveBeenCalledTimes( 1 );
-					expect( onInsertSuccess ).toHaveBeenCalledWith( expectedFaqs );
+					expect( onInsertSuccess ).toHaveBeenCalledWith( expectedFaqs, 'mock-client-id' );
 
 					// Verify __mockInsertBlocks was called with correct block count
 					expect( __mockInsertBlocks ).toHaveBeenCalledTimes( 1 );
@@ -1025,8 +1025,8 @@ describe( 'Property 7: Post meta persistence after insertion', () => {
 				// onInsertSuccess should have been called exactly once
 				expect( onInsertSuccess ).toHaveBeenCalledTimes( 1 );
 
-				// It should have been called with the FAQ list
-				expect( onInsertSuccess ).toHaveBeenCalledWith( faqs );
+				// It should have been called with the FAQ list and clientId
+				expect( onInsertSuccess ).toHaveBeenCalledWith( faqs, 'mock-client-id' );
 
 				onInsertSuccess.mockClear();
 				unmount();

@@ -1,22 +1,50 @@
 /**
- * Unit tests for EditorPanel component.
+ * Unit tests for EditorPanel component (refactored version).
+ *
+ * Tests the component rendering based on state returned by useBlockInsertState hook.
+ * The hook is mocked directly so we can control state and actions without
+ * setting up all underlying mocks (useEntityProp, fetch, etc.).
  *
  * @package AiFaqGenerator
  */
 
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-import { useSelect, dispatch } from '@wordpress/data';
-import { useEntityProp } from '@wordpress/core-data';
+import { useSelect } from '@wordpress/data';
 import { EditorPanel } from '../EditorPanel';
+import { useBlockInsertState } from '../useBlockInsertState';
+
+// Mock the useBlockInsertState hook.
+jest.mock( '../useBlockInsertState' );
 
 // --- Helpers ---
 
-const mockCreateNotice = jest.fn();
-const mockRemoveNotice = jest.fn();
-const mockSetMeta = jest.fn();
-let mockMeta = {};
+const mockActions = {
+	handleGenerate: jest.fn().mockResolvedValue( null ),
+	handleInsertSuccess: jest.fn(),
+	handleRegenerate: jest.fn().mockResolvedValue( undefined ),
+	handleEditBlock: jest.fn(),
+	handleClear: jest.fn(),
+};
+
+/**
+ * Create a mock state object with sensible defaults.
+ *
+ * @param {Object} overrides Properties to override.
+ * @return {Object} Mock state.
+ */
+function createMockState( overrides = {} ) {
+	return {
+		sidebarState: 'empty',
+		activeBlockClientId: null,
+		faqCount: 0,
+		isGenerating: false,
+		isRegenerating: false,
+		error: null,
+		...overrides,
+	};
+}
 
 /**
  * Configure useSelect mock to simulate a post type that supports custom-fields.
@@ -51,234 +79,217 @@ function setupUseSelect( supportsCustomFields = true, postId = 42 ) {
 	} );
 }
 
-/**
- * Set up the global aifaqEditor object and wp.data.
- */
-function setupGlobals( postId = 42 ) {
-	global.aifaqEditor = {
-		ajaxurl: 'http://example.com/wp-admin/admin-ajax.php',
-		nonce: 'test-nonce-123',
-		postId,
-	};
-	global.wp = {
-		data: {
-			select: ( storeName ) => {
-				if ( storeName === 'core/editor' ) {
-					return {
-						getCurrentPostId: () => postId,
-					};
-				}
-				return {};
-			},
-		},
-	};
-}
-
 // --- Test Suite ---
 
 describe( 'EditorPanel', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
-		jest.useFakeTimers();
-		mockMeta = {};
-
-		// Configure dispatch mock.
-		dispatch.mockReturnValue( {
-			createNotice: mockCreateNotice,
-			removeNotice: mockRemoveNotice,
-		} );
-
-		// Configure useEntityProp mock.
-		useEntityProp.mockImplementation( () => [ mockMeta, mockSetMeta ] );
-
-		setupGlobals();
 		setupUseSelect( true, 42 );
-		global.fetch = jest.fn();
+		useBlockInsertState.mockReturnValue( [ createMockState(), mockActions ] );
 	} );
 
-	afterEach( () => {
-		jest.useRealTimers();
-		delete global.aifaqEditor;
-		delete global.wp;
-		delete global.fetch;
+	describe( 'empty state', () => {
+		it( 'renders only the "Generate FAQs" button', () => {
+			useBlockInsertState.mockReturnValue( [
+				createMockState( { sidebarState: 'empty' } ),
+				mockActions,
+			] );
+
+			render( <EditorPanel /> );
+
+			expect( screen.getByRole( 'button', { name: 'Generate FAQs' } ) ).toBeInTheDocument();
+			expect( screen.queryByText( /FAQs generated/ ) ).not.toBeInTheDocument();
+			expect( screen.queryByRole( 'button', { name: 'Edit Block' } ) ).not.toBeInTheDocument();
+			expect( screen.queryByRole( 'button', { name: 'Regenerate' } ) ).not.toBeInTheDocument();
+			expect( screen.queryByRole( 'button', { name: /Clear/ } ) ).not.toBeInTheDocument();
+		} );
 	} );
 
-	it( 'renders panel with title "AI FAQ Generator" and button text "Generate FAQs"', () => {
-		render( <EditorPanel /> );
+	describe( 'has_faqs state', () => {
+		it( 'renders FAQ count and Generate button', () => {
+			useBlockInsertState.mockReturnValue( [
+				createMockState( { sidebarState: 'has_faqs', faqCount: 3 } ),
+				mockActions,
+			] );
 
-		expect( screen.getByText( 'AI FAQ Generator' ) ).toBeInTheDocument();
-		expect( screen.getByRole( 'button', { name: 'Generate FAQs' } ) ).toBeInTheDocument();
+			render( <EditorPanel /> );
+
+			expect( screen.getByText( '3 FAQs generated' ) ).toBeInTheDocument();
+			expect( screen.getByRole( 'button', { name: 'Generate FAQs' } ) ).toBeInTheDocument();
+			expect( screen.queryByRole( 'button', { name: 'Edit Block' } ) ).not.toBeInTheDocument();
+			expect( screen.queryByRole( 'button', { name: /Clear/ } ) ).not.toBeInTheDocument();
+		} );
 	} );
 
-	it( 'button click triggers AJAX with correct action, nonce, and post_id', async () => {
-		global.fetch.mockResolvedValueOnce( {
-			json: () => Promise.resolve( { success: true, data: { faqs: [], count: 0 } } ),
+	describe( 'block_inserted state', () => {
+		it( 'renders success text, Generate FAQs button (no items), and Edit Block', () => {
+			useBlockInsertState.mockReturnValue( [
+				createMockState( {
+					sidebarState: 'block_inserted',
+					activeBlockClientId: 'abc-123',
+					blockHasItems: false,
+				} ),
+				mockActions,
+			] );
+
+			render( <EditorPanel /> );
+
+			expect( screen.getByText( '1 FAQ Block inserted' ) ).toBeInTheDocument();
+			expect( screen.getByRole( 'button', { name: 'Generate FAQs' } ) ).toBeInTheDocument();
+			expect( screen.getByRole( 'button', { name: 'Edit Block' } ) ).toBeInTheDocument();
+			expect( screen.queryByRole( 'button', { name: /Clear/ } ) ).not.toBeInTheDocument();
 		} );
 
-		render( <EditorPanel /> );
+		it( 'renders Regenerate button when block has items', () => {
+			useBlockInsertState.mockReturnValue( [
+				createMockState( {
+					sidebarState: 'block_inserted',
+					activeBlockClientId: 'abc-123',
+					blockHasItems: true,
+				} ),
+				mockActions,
+			] );
 
-		await act( async () => {
+			render( <EditorPanel /> );
+
+			expect( screen.getByText( '1 FAQ Block inserted' ) ).toBeInTheDocument();
+			expect( screen.getByRole( 'button', { name: 'Regenerate' } ) ).toBeInTheDocument();
+			expect( screen.getByRole( 'button', { name: 'Edit Block' } ) ).toBeInTheDocument();
+			expect( screen.queryByRole( 'button', { name: 'Generate FAQs' } ) ).not.toBeInTheDocument();
+		} );
+	} );
+
+	describe( 'loading states', () => {
+		it( 'disables Generate button and shows "Generating..." when isGenerating is true', () => {
+			useBlockInsertState.mockReturnValue( [
+				createMockState( { sidebarState: 'empty', isGenerating: true } ),
+				mockActions,
+			] );
+
+			render( <EditorPanel /> );
+
+			const button = screen.getByRole( 'button', { name: 'Generating...' } );
+			expect( button ).toBeDisabled();
+			expect( button ).toHaveAttribute( 'data-is-busy', 'true' );
+			expect( screen.getByTestId( 'spinner' ) ).toBeInTheDocument();
+		} );
+
+		it( 'disables all buttons and shows "Generating..." when isRegenerating is true', () => {
+			useBlockInsertState.mockReturnValue( [
+				createMockState( {
+					sidebarState: 'block_inserted',
+					activeBlockClientId: 'abc-123',
+					isRegenerating: true,
+				} ),
+				mockActions,
+			] );
+
+			render( <EditorPanel /> );
+
+			const regenButton = screen.getByRole( 'button', { name: 'Generating...' } );
+			expect( regenButton ).toBeDisabled();
+			expect( regenButton ).toHaveAttribute( 'data-is-busy', 'true' );
+
+			expect( screen.getByRole( 'button', { name: 'Edit Block' } ) ).toBeDisabled();
+		} );
+
+		it( 'disables Generate button in has_faqs state when isGenerating is true', () => {
+			useBlockInsertState.mockReturnValue( [
+				createMockState( {
+					sidebarState: 'has_faqs',
+					faqCount: 5,
+					isGenerating: true,
+				} ),
+				mockActions,
+			] );
+
+			render( <EditorPanel /> );
+
+			expect( screen.getByRole( 'button', { name: 'Generating...' } ) ).toBeDisabled();
+		} );
+	} );
+
+	describe( 'error display', () => {
+		it( 'renders error message when state.error is set', () => {
+			useBlockInsertState.mockReturnValue( [
+				createMockState( {
+					sidebarState: 'empty',
+					error: 'Something went wrong',
+				} ),
+				mockActions,
+			] );
+
+			render( <EditorPanel /> );
+
+			expect( screen.getByText( 'Something went wrong' ) ).toBeInTheDocument();
+		} );
+
+		it( 'does not render error paragraph when state.error is null', () => {
+			useBlockInsertState.mockReturnValue( [
+				createMockState( { sidebarState: 'empty', error: null } ),
+				mockActions,
+			] );
+
+			render( <EditorPanel /> );
+
+			expect( screen.queryByText( 'Something went wrong' ) ).not.toBeInTheDocument();
+		} );
+	} );
+
+	describe( 'post type support', () => {
+		it( 'does not render panel when post type lacks custom-fields support', () => {
+			setupUseSelect( false, 42 );
+
+			const { container } = render( <EditorPanel /> );
+
+			expect( container ).toBeEmptyDOMElement();
+		} );
+	} );
+
+	describe( 'button click handlers', () => {
+		it( 'calls handleGenerate when Generate FAQs button is clicked', () => {
+			useBlockInsertState.mockReturnValue( [
+				createMockState( { sidebarState: 'empty' } ),
+				mockActions,
+			] );
+
+			render( <EditorPanel /> );
+
 			fireEvent.click( screen.getByRole( 'button', { name: 'Generate FAQs' } ) );
+
+			expect( mockActions.handleGenerate ).toHaveBeenCalledTimes( 1 );
 		} );
 
-		expect( global.fetch ).toHaveBeenCalledTimes( 1 );
+		it( 'calls handleEditBlock when Edit Block button is clicked', () => {
+			useBlockInsertState.mockReturnValue( [
+				createMockState( {
+					sidebarState: 'block_inserted',
+					activeBlockClientId: 'abc-123',
+				} ),
+				mockActions,
+			] );
 
-		const [ url, options ] = global.fetch.mock.calls[ 0 ];
-		expect( url ).toBe( 'http://example.com/wp-admin/admin-ajax.php' );
-		expect( options.method ).toBe( 'POST' );
+			render( <EditorPanel /> );
 
-		const body = options.body;
-		expect( body.get( 'action' ) ).toBe( 'aifaq_generate_faqs' );
-		expect( body.get( '_ajax_nonce' ) ).toBe( 'test-nonce-123' );
-		expect( body.get( 'post_id' ) ).toBe( '42' );
-	} );
+			fireEvent.click( screen.getByRole( 'button', { name: 'Edit Block' } ) );
 
-	it( 'shows loading state: spinner visible, button disabled, text "Generating..."', async () => {
-		// Never resolve the fetch to keep loading state active.
-		let resolvePromise;
-		global.fetch.mockReturnValueOnce(
-			new Promise( ( resolve ) => {
-				resolvePromise = resolve;
-			} )
-		);
+			expect( mockActions.handleEditBlock ).toHaveBeenCalledTimes( 1 );
+		} );
 
-		render( <EditorPanel /> );
+		it( 'calls handleRegenerate when Generate FAQs button is clicked in block_inserted state', () => {
+			useBlockInsertState.mockReturnValue( [
+				createMockState( {
+					sidebarState: 'block_inserted',
+					activeBlockClientId: 'abc-123',
+				} ),
+				mockActions,
+			] );
 
-		await act( async () => {
+			render( <EditorPanel /> );
+
 			fireEvent.click( screen.getByRole( 'button', { name: 'Generate FAQs' } ) );
+
+			expect( mockActions.handleRegenerate ).toHaveBeenCalledTimes( 1 );
 		} );
-
-		// Button should show "Generating..." and be disabled.
-		const button = screen.getByRole( 'button', { name: 'Generating...' } );
-		expect( button ).toBeDisabled();
-		expect( button ).toHaveAttribute( 'data-is-busy', 'true' );
-
-		// Spinner should be visible.
-		expect( screen.getByTestId( 'spinner' ) ).toBeInTheDocument();
-
-		// Clean up: resolve the promise.
-		await act( async () => {
-			resolvePromise( {
-				json: () => Promise.resolve( { success: true, data: { faqs: [], count: 0 } } ),
-			} );
-		} );
-	} );
-
-	it( 'success response opens the preview modal with FAQ data', async () => {
-		const fakeFaqs = [
-			{ question: 'Q1?', answer: 'A1' },
-			{ question: 'Q2?', answer: 'A2' },
-			{ question: 'Q3?', answer: 'A3' },
-		];
-
-		global.fetch.mockResolvedValueOnce( {
-			json: () => Promise.resolve( {
-				success: true,
-				data: { faqs: fakeFaqs, count: 3 },
-			} ),
-		} );
-
-		render( <EditorPanel /> );
-
-		await act( async () => {
-			fireEvent.click( screen.getByRole( 'button', { name: 'Generate FAQs' } ) );
-		} );
-
-		// Modal should be open.
-		expect( screen.getByTestId( 'modal' ) ).toBeInTheDocument();
-		expect( screen.getByText( 'Preview Generated FAQs' ) ).toBeInTheDocument();
-
-		// Should NOT dispatch a success notice on generation (modal replaces it).
-		expect( mockCreateNotice ).not.toHaveBeenCalled();
-
-		// Meta should NOT be updated yet (only on insert).
-		expect( mockSetMeta ).not.toHaveBeenCalled();
-	} );
-	it( 'error response with message dispatches error notice', async () => {
-		global.fetch.mockResolvedValueOnce( {
-			json: () => Promise.resolve( {
-				success: false,
-				data: { message: 'You do not have permission to edit this post.' },
-			} ),
-		} );
-
-		render( <EditorPanel /> );
-
-		await act( async () => {
-			fireEvent.click( screen.getByRole( 'button', { name: 'Generate FAQs' } ) );
-		} );
-
-		expect( mockCreateNotice ).toHaveBeenCalledWith(
-			'error',
-			'You do not have permission to edit this post.',
-			expect.objectContaining( { isDismissible: true } )
-		);
-
-		// Modal should NOT be open (Requirement 1.5).
-		expect( screen.queryByTestId( 'modal' ) ).not.toBeInTheDocument();
-	} );
-
-	it( 'error response without message dispatches generic error notice', async () => {
-		global.fetch.mockResolvedValueOnce( {
-			json: () => Promise.resolve( {
-				success: false,
-				data: {},
-			} ),
-		} );
-
-		render( <EditorPanel /> );
-
-		await act( async () => {
-			fireEvent.click( screen.getByRole( 'button', { name: 'Generate FAQs' } ) );
-		} );
-
-		expect( mockCreateNotice ).toHaveBeenCalledWith(
-			'error',
-			'FAQ generation failed.',
-			expect.objectContaining( { isDismissible: true } )
-		);
-	} );
-
-	it( 'network timeout dispatches server unreachable notice', async () => {
-		// Simulate an AbortError (network timeout).
-		global.fetch.mockImplementationOnce( () => {
-			return Promise.reject( new DOMException( 'The operation was aborted.', 'AbortError' ) );
-		} );
-
-		render( <EditorPanel /> );
-
-		await act( async () => {
-			fireEvent.click( screen.getByRole( 'button', { name: 'Generate FAQs' } ) );
-		} );
-
-		expect( mockCreateNotice ).toHaveBeenCalledWith(
-			'error',
-			'Could not reach the server. Please try again.',
-			expect.objectContaining( { isDismissible: true } )
-		);
-
-		// Modal should NOT be open (Requirement 1.6).
-		expect( screen.queryByTestId( 'modal' ) ).not.toBeInTheDocument();
-	} );
-
-	it( 'existing meta displays FAQ count on initial load', () => {
-		const existingFaqs = [
-			{ question: 'Q1?', answer: 'A1' },
-			{ question: 'Q2?', answer: 'A2' },
-		];
-		mockMeta = { _aifaq_generated_faqs: JSON.stringify( existingFaqs ) };
-		useEntityProp.mockImplementation( () => [ mockMeta, mockSetMeta ] );
-
-		render( <EditorPanel /> );
-
-		expect( screen.getByText( '2 FAQs generated' ) ).toBeInTheDocument();
-	} );
-
-	it( 'panel does not render when post type lacks custom-fields support', () => {
-		setupUseSelect( false, 42 );
-
-		const { container } = render( <EditorPanel /> );
-
-		expect( container ).toBeEmptyDOMElement();
 	} );
 } );

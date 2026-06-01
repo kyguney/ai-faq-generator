@@ -3,7 +3,7 @@
     "apiVersion": 3,
     "name": "wpbits/faq-accordion",
     "version": "1.0.0",
-    "title": "FAQ Accordion",
+    "title": "AI FAQ Accordion",
     "category": "widgets",
     "icon": "editor-help",
     "description": "Display FAQ items in an interactive accordion format.",
@@ -29,7 +29,8 @@
     },
     "supports": {
         "html": false,
-        "align": ["wide", "full"]
+        "align": ["wide", "full"],
+        "multiple": false
     },
     "editorScript": "file:./build/index.js",
     "editorStyle": "file:./build/index.css",

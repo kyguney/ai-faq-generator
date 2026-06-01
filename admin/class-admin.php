@@ -16,6 +16,7 @@ class Admin
         add_action('admin_menu', [$this, 'add_admin_menu']);
         add_action('admin_init', [$this, 'register_settings']);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_settings_assets']);
+        add_action('enqueue_block_editor_assets', [$this, 'enqueue_editor_assets']);
     }
 
     public function add_admin_menu(): void
@@ -114,5 +115,43 @@ class Admin
             'restUrl' => rest_url('ai-faq-generator/v1'),
             'nonce'   => wp_create_nonce('wp_rest'),
         ]);
+    }
+
+    public function enqueue_editor_assets(): void
+    {
+        $asset_file = AFG_PLUGIN_PATH . 'build/index.asset.php';
+
+        if (!file_exists($asset_file)) {
+            return;
+        }
+
+        $asset = require $asset_file;
+
+        wp_register_script(
+            'aifaq-editor',
+            plugins_url('build/index.js', dirname(__FILE__)),
+            $asset['dependencies'],
+            $asset['version'],
+            true
+        );
+
+        wp_localize_script('aifaq-editor', 'aifaqEditor', [
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'nonce'   => wp_create_nonce('aifaq_generate_faqs'),
+            'postId'  => get_the_ID(),
+        ]);
+
+        wp_enqueue_script('aifaq-editor');
+
+        // Enqueue editor styles if available.
+        $style_path = AFG_PLUGIN_PATH . 'build/index.css';
+        if (file_exists($style_path)) {
+            wp_enqueue_style(
+                'aifaq-editor',
+                plugins_url('build/index.css', dirname(__FILE__)),
+                [],
+                $asset['version']
+            );
+        }
     }
 }

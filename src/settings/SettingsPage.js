@@ -140,17 +140,35 @@ function SettingsPage() {
 
 						<TextControl
 							label="API Key"
-							type="password"
-							value={ apiKeyModified ? settings.api_key : '' }
-							placeholder={
-								settings.has_api_key && ! apiKeyModified
-									? 'API key is set (leave blank to keep current)'
-									: 'Enter your API key'
+							type={ apiKeyModified ? 'password' : 'text' }
+							value={
+								apiKeyModified
+									? settings.api_key
+									: settings.has_api_key
+										? settings.api_key
+										: ''
 							}
+							placeholder={
+								! settings.has_api_key
+									? 'Enter your API key'
+									: ''
+							}
+							readOnly={ ! apiKeyModified && settings.has_api_key }
+							onFocus={ () => {
+								if ( ! apiKeyModified && settings.has_api_key ) {
+									setApiKeyModified( true );
+									setSettings( { ...settings, api_key: '' } );
+								}
+							} }
 							onChange={ ( value ) => {
 								setApiKeyModified( true );
 								setSettings( { ...settings, api_key: value } );
 							} }
+							help={
+								settings.has_api_key && ! apiKeyModified
+									? 'Click the field to enter a new API key.'
+									: undefined
+							}
 						/>
 
 						<TextControl

@@ -43,6 +43,10 @@ $afg_test_settings_sections = [];
 global $afg_test_current_user_can;
 $afg_test_current_user_can = true;
 
+/** @var bool */
+global $afg_test_is_admin;
+$afg_test_is_admin = true;
+
 /** @var array<int, string> */
 global $afg_test_settings_fields_calls;
 $afg_test_settings_fields_calls = [];
@@ -68,6 +72,14 @@ global $afg_test_enqueued_scripts;
 $afg_test_enqueued_scripts = [];
 
 /** @var array<int, array<string, mixed>> */
+global $afg_test_registered_scripts;
+$afg_test_registered_scripts = [];
+
+/** @var int|false */
+global $afg_test_current_post_id;
+$afg_test_current_post_id = 42;
+
+/** @var array<int, array<string, mixed>> */
 global $afg_test_enqueued_styles;
 $afg_test_enqueued_styles = [];
 
@@ -76,6 +88,31 @@ global $afg_test_localized_scripts;
 $afg_test_localized_scripts = [];
 
 // ─── WordPress core function stubs ───────────────────────────────────────────
+
+if (!function_exists('is_admin')) {
+    function is_admin(): bool
+    {
+        global $afg_test_is_admin;
+        return $afg_test_is_admin ?? true;
+    }
+}
+
+if (!function_exists('register_meta')) {
+    /** @var array<int, array<string, mixed>> */
+    global $afg_test_registered_meta;
+    $afg_test_registered_meta = [];
+
+    function register_meta(string $object_type, string $meta_key, array $args = []): bool
+    {
+        global $afg_test_registered_meta;
+        $afg_test_registered_meta[] = [
+            'object_type' => $object_type,
+            'meta_key'    => $meta_key,
+            'args'        => $args,
+        ];
+        return true;
+    }
+}
 
 if (!function_exists('add_action')) {
     function add_action(string $hook, $callback, int $priority = 10, int $accepted_args = 1): void
@@ -163,7 +200,7 @@ if (!function_exists('add_settings_section')) {
 }
 
 if (!function_exists('current_user_can')) {
-    function current_user_can(string $capability): bool
+    function current_user_can(string $capability, ...$args): bool
     {
         global $afg_test_current_user_can;
         return $afg_test_current_user_can;
@@ -304,6 +341,44 @@ if (!function_exists('wp_localize_script')) {
             'l10n'        => $l10n,
         ];
         return true;
+    }
+}
+
+if (!function_exists('wp_register_script')) {
+    /** @var array<int, array<string, mixed>> */
+    global $afg_test_registered_scripts;
+    $afg_test_registered_scripts = [];
+
+    function wp_register_script(string $handle, string $src = '', array $deps = [], $ver = false, $args = []): bool
+    {
+        global $afg_test_registered_scripts;
+        $afg_test_registered_scripts[] = [
+            'handle' => $handle,
+            'src'    => $src,
+            'deps'   => $deps,
+            'ver'    => $ver,
+            'args'   => $args,
+        ];
+        return true;
+    }
+}
+
+if (!function_exists('admin_url')) {
+    function admin_url(string $path = '', string $scheme = 'admin'): string
+    {
+        return 'https://example.com/wp-admin/' . ltrim($path, '/');
+    }
+}
+
+if (!function_exists('get_the_ID')) {
+    /** @var int|false */
+    global $afg_test_current_post_id;
+    $afg_test_current_post_id = 42;
+
+    function get_the_ID(): int|false
+    {
+        global $afg_test_current_post_id;
+        return $afg_test_current_post_id;
     }
 }
 
@@ -498,6 +573,138 @@ if (!function_exists('get_post')) {
     }
 }
 
+// ─── WordPress AJAX function stubs ───────────────────────────────────────────
+
+/** @var bool Whether check_ajax_referer should pass */
+global $afg_test_check_ajax_referer_result;
+$afg_test_check_ajax_referer_result = true;
+
+// Alias for backward compatibility with tests using the old name.
+global $afg_test_ajax_referer_valid;
+$afg_test_ajax_referer_valid = true;
+
+/** @var array|null Last wp_send_json_error call data */
+global $afg_test_json_error_response;
+$afg_test_json_error_response = null;
+
+/** @var array|null Last wp_send_json_success call data */
+global $afg_test_json_success_response;
+$afg_test_json_success_response = null;
+
+/** @var array|null Combined JSON response (for tests using $afg_test_json_response) */
+global $afg_test_json_response;
+$afg_test_json_response = null;
+
+/** @var bool|int Return value for update_post_meta */
+global $afg_test_update_post_meta_return;
+$afg_test_update_post_meta_return = true;
+
+/** @var array<int, array<string, mixed>> Captured update_post_meta calls */
+global $afg_test_update_post_meta_calls;
+$afg_test_update_post_meta_calls = [];
+
+/**
+ * Exception thrown by wp_send_json_* stubs to halt handler execution.
+ * This simulates the die() that WordPress normally calls.
+ */
+class Afg_Test_Json_Response_Exception extends \Exception
+{
+    public ?array $data;
+    public ?int $status_code;
+    public bool $success;
+
+    public function __construct(string $message = '', ?array $data = null, ?int $status_code = null, bool $success = false)
+    {
+        $this->data = $data;
+        $this->status_code = $status_code;
+        $this->success = $success;
+        parent::__construct($message);
+    }
+}
+
+if (!function_exists('check_ajax_referer')) {
+    function check_ajax_referer($action = -1, $query_arg = false, $stop = true)
+    {
+        global $afg_test_check_ajax_referer_result, $afg_test_ajax_referer_valid;
+        // Support both global names - if either is explicitly set to false, fail.
+        if ($afg_test_check_ajax_referer_result === false || $afg_test_ajax_referer_valid === false) {
+            return false;
+        }
+        return 1;
+    }
+}
+
+if (!function_exists('wp_send_json_error')) {
+    function wp_send_json_error($data = null, int $status_code = 200, int $options = 0): void
+    {
+        global $afg_test_json_error_response, $afg_test_json_response;
+        $afg_test_json_error_response = [
+            'data'   => $data,
+            'status' => $status_code,
+        ];
+        $afg_test_json_response = [
+            'success' => false,
+            'data'    => $data,
+            'status'  => $status_code,
+        ];
+        throw new Afg_Test_Json_Response_Exception(
+            'wp_send_json_error',
+            is_array($data) ? $data : null,
+            $status_code,
+            false
+        );
+    }
+}
+
+if (!function_exists('wp_send_json_success')) {
+    function wp_send_json_success($data = null, int $status_code = 200, int $options = 0): void
+    {
+        global $afg_test_json_success_response, $afg_test_json_response;
+        $afg_test_json_success_response = [
+            'data'   => $data,
+            'status' => $status_code,
+        ];
+        $afg_test_json_response = [
+            'success' => true,
+            'data'    => $data,
+            'status'  => $status_code,
+        ];
+        throw new Afg_Test_Json_Response_Exception(
+            'wp_send_json_success',
+            is_array($data) ? $data : null,
+            $status_code,
+            true
+        );
+    }
+}
+
+if (!function_exists('update_post_meta')) {
+    /** @var array<string, array<string, mixed>> In-memory post meta store */
+    global $afg_test_post_meta;
+    $afg_test_post_meta = [];
+
+    /** @var bool Whether update_post_meta should succeed */
+    global $afg_test_update_post_meta_return;
+    $afg_test_update_post_meta_return = true;
+
+    function update_post_meta(int $post_id, string $meta_key, $meta_value, $prev_value = '')
+    {
+        global $afg_test_post_meta, $afg_test_update_post_meta_return;
+        if (!$afg_test_update_post_meta_return) {
+            return false;
+        }
+        $afg_test_post_meta["{$post_id}_{$meta_key}"] = $meta_value;
+        return true;
+    }
+}
+
+if (!function_exists('wp_json_encode')) {
+    function wp_json_encode($data, int $options = 0, int $depth = 512)
+    {
+        return json_encode($data, $options, $depth);
+    }
+}
+
 // ─── Load OpenAIClient (after WP stubs are defined) ──────────────────────────
 
 require_once AFG_PLUGIN_PATH . 'includes/class-openai-client.php';
@@ -509,3 +716,8 @@ require_once __DIR__ . '/../includes/services/class-prompt-builder.php';
 // ─── Load Faq_Generator service ──────────────────────────────────────────────
 
 require_once AFG_PLUGIN_PATH . 'includes/services/class-faq-generator.php';
+
+// ─── Load Ajax_Generate_Faqs handler ─────────────────────────────────────────
+
+require_once AFG_PLUGIN_PATH . 'includes/class-ajax-generate-faqs.php';
+

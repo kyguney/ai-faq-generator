@@ -14,5 +14,6 @@ module.exports = {
 		'^@wordpress/core-data$': '<rootDir>/src/editor/__mocks__/@wordpress/core-data.js',
 		'^@wordpress/element$': '<rootDir>/src/editor/__mocks__/@wordpress/element.js',
 		'^@wordpress/plugins$': '<rootDir>/src/editor/__mocks__/@wordpress/plugins.js',
+		'^@wordpress/blocks$': '<rootDir>/src/editor/__mocks__/@wordpress/blocks.js',
 	},
 };

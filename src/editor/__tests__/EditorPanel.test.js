@@ -164,7 +164,7 @@ describe( 'EditorPanel', () => {
 		} );
 	} );
 
-	it( 'success response updates FAQ count display and dispatches success notice', async () => {
+	it( 'success response opens the preview modal with FAQ data', async () => {
 		const fakeFaqs = [
 			{ question: 'Q1?', answer: 'A1' },
 			{ question: 'Q2?', answer: 'A2' },
@@ -184,21 +184,16 @@ describe( 'EditorPanel', () => {
 			fireEvent.click( screen.getByRole( 'button', { name: 'Generate FAQs' } ) );
 		} );
 
-		// Should dispatch success notice.
-		expect( mockCreateNotice ).toHaveBeenCalledWith(
-			'success',
-			'3 FAQs generated',
-			expect.objectContaining( { isDismissible: true } )
-		);
+		// Modal should be open.
+		expect( screen.getByTestId( 'modal' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'Preview Generated FAQs' ) ).toBeInTheDocument();
 
-		// Should update meta via setMeta.
-		expect( mockSetMeta ).toHaveBeenCalledWith(
-			expect.objectContaining( {
-				_aifaq_generated_faqs: JSON.stringify( fakeFaqs ),
-			} )
-		);
+		// Should NOT dispatch a success notice on generation (modal replaces it).
+		expect( mockCreateNotice ).not.toHaveBeenCalled();
+
+		// Meta should NOT be updated yet (only on insert).
+		expect( mockSetMeta ).not.toHaveBeenCalled();
 	} );
-
 	it( 'error response with message dispatches error notice', async () => {
 		global.fetch.mockResolvedValueOnce( {
 			json: () => Promise.resolve( {
@@ -218,6 +213,9 @@ describe( 'EditorPanel', () => {
 			'You do not have permission to edit this post.',
 			expect.objectContaining( { isDismissible: true } )
 		);
+
+		// Modal should NOT be open (Requirement 1.5).
+		expect( screen.queryByTestId( 'modal' ) ).not.toBeInTheDocument();
 	} );
 
 	it( 'error response without message dispatches generic error notice', async () => {
@@ -258,6 +256,9 @@ describe( 'EditorPanel', () => {
 			'Could not reach the server. Please try again.',
 			expect.objectContaining( { isDismissible: true } )
 		);
+
+		// Modal should NOT be open (Requirement 1.6).
+		expect( screen.queryByTestId( 'modal' ) ).not.toBeInTheDocument();
 	} );
 
 	it( 'existing meta displays FAQ count on initial load', () => {

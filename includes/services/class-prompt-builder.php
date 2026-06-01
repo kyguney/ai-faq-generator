@@ -57,8 +57,8 @@ class Prompt_Builder
      */
     private function truncate_content(string $content): string
     {
-        if (strlen($content) > self::CONTENT_LIMIT) {
-            return substr($content, 0, self::CONTENT_LIMIT);
+        if (mb_strlen($content, 'UTF-8') > self::CONTENT_LIMIT) {
+            return mb_substr($content, 0, self::CONTENT_LIMIT, 'UTF-8');
         }
 
         return $content;

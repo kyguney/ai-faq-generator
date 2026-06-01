@@ -1,0 +1,84 @@
+// AI FAQ Generator - Preview Modal styles
+
+.aifaq-preview-modal-wrapper {
+	min-width: 600px;
+	max-width: 720px;
+	width: 90vw;
+}
+
+.aifaq-preview-modal {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+
+	// FAQ count display
+	.aifaq-preview-modal__count {
+		margin: 0;
+		font-size: 13px;
+		color: var(--wp-admin-theme-color, #3858e9);
+		font-weight: 600;
+	}
+
+	// Inline error message
+	.aifaq-preview-modal__error {
+		margin: 0;
+		padding: 8px 16px;
+		color: #cc1818;
+		color: var(--wp-components-color-accent-red, #cc1818);
+		background: rgba(204, 24, 24, 0.04);
+		border-left: 4px solid var(--wp-components-color-accent-red, #cc1818);
+		font-size: 13px;
+	}
+
+	// Empty state message
+	.aifaq-preview-modal__empty {
+		margin: 0;
+		padding: 32px 16px;
+		text-align: center;
+		color: var(--wp-admin-theme-color-darker-10, #757575);
+		font-size: 13px;
+	}
+
+	// FAQ list container (scrollable)
+	.aifaq-preview-modal__list {
+		display: flex;
+		flex-direction: column;
+		max-height: 400px;
+		overflow-y: auto;
+	}
+
+	// Individual FAQ item with visual separation
+	.aifaq-preview-modal__item {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 16px 0;
+		border-bottom: 1px solid var(--wp-admin-theme-color-darker-10, #ddd);
+
+		&:first-child {
+			padding-top: 0;
+		}
+
+		&:last-child {
+			border-bottom: none;
+		}
+	}
+
+	// Empty field invalid indicator
+	.is-invalid {
+		input,
+		textarea {
+			border-color: var(--wp-components-color-accent-red, #cc1818);
+			box-shadow: 0 0 0 1px var(--wp-components-color-accent-red, #cc1818);
+		}
+	}
+
+	// Button row at bottom
+	.aifaq-preview-modal__actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 8px;
+		padding-top: 16px;
+		border-top: 1px solid var(--wp-admin-theme-color-darker-10, #ddd);
+	}
+}

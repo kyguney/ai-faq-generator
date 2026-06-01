@@ -6,6 +6,7 @@ import { Button, Spinner } from '@wordpress/components';
 import { useEntityProp } from '@wordpress/core-data';
 import { useSelect, dispatch } from '@wordpress/data';
 import { useState } from '@wordpress/element';
+import { PreviewModal } from './PreviewModal';
 import './editor.scss';
 
 /**
@@ -54,6 +55,8 @@ function showNotice( type, message, autoDismiss ) {
 
 function EditorPanel() {
 	const [ isLoading, setIsLoading ] = useState( false );
+	const [ isModalOpen, setIsModalOpen ] = useState( false );
+	const [ generatedFaqs, setGeneratedFaqs ] = useState( [] );
 
 	// Get current post type and check custom-fields support.
 	const supportsCustomFields = useSelect( ( select ) => {
@@ -118,19 +121,11 @@ function EditorPanel() {
 			const result = await response.json();
 
 			if ( result.success ) {
-				const { faqs: newFaqs, count } = result.data;
+				const { faqs: newFaqs } = result.data;
 
-				// Update local entity prop state so the count label refreshes.
-				setMeta( {
-					...meta,
-					_aifaq_generated_faqs: JSON.stringify( newFaqs ),
-				} );
-
-				showNotice(
-					'success',
-					`${ count } FAQs generated`,
-					5000
-				);
+				// Open the preview modal with the generated FAQs.
+				setGeneratedFaqs( newFaqs );
+				setIsModalOpen( true );
 			} else {
 				// Error response from server.
 				const errorMessage =
@@ -173,6 +168,18 @@ function EditorPanel() {
 					</p>
 				) }
 			</div>
+			{ isModalOpen && (
+				<PreviewModal
+					faqs={ generatedFaqs }
+					postId={ postId }
+					onClose={ () => setIsModalOpen( false ) }
+					onInsertSuccess={ ( finalFaqs ) => {
+						setMeta( { ...meta, _aifaq_generated_faqs: JSON.stringify( finalFaqs ) } );
+						setIsModalOpen( false );
+						showNotice( 'success', `${ finalFaqs.length } FAQs inserted`, 5000 );
+					} }
+				/>
+			) }
 		</PluginDocumentSettingPanel>
 	);
 }

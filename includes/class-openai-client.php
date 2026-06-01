@@ -132,9 +132,15 @@ class OpenAIClient implements AIProviderInterface
      */
     private function sendRequest(array $body): array
     {
+        $encoded_body = wp_json_encode($body);
+
+        if ($encoded_body === false) {
+            throw new \RuntimeException('Failed to encode request body as JSON.');
+        }
+
         $response = wp_remote_post($this->getEndpointUrl(), [
             'headers' => $this->buildHeaders(),
-            'body'    => json_encode($body),
+            'body'    => $encoded_body,
             'timeout' => 30,
         ]);
 

@@ -71,10 +71,16 @@ class Ajax_Generate_Faqs
         }
 
         // 5. Store FAQ data as post meta
-        $updated = update_post_meta($post_id, '_aifaq_generated_faqs', wp_json_encode($faqs));
+        $encoded_faqs = wp_json_encode($faqs);
+        $updated = update_post_meta($post_id, '_aifaq_generated_faqs', $encoded_faqs);
 
+        // update_post_meta returns false both on failure AND when the value is unchanged.
+        // Only treat it as an error if the stored value doesn't match what we tried to save.
         if ($updated === false) {
-            wp_send_json_error(['message' => 'FAQ data could not be saved.'], 500);
+            $stored = get_post_meta($post_id, '_aifaq_generated_faqs', true);
+            if ($stored !== $encoded_faqs) {
+                wp_send_json_error(['message' => 'FAQ data could not be saved.'], 500);
+            }
         }
 
         // 6. Return success response

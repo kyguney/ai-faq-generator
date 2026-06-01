@@ -1,0 +1,82 @@
+/**
+ * Frontend styles for the FAQ Accordion block.
+ *
+ * Styles native <details>/<summary> elements to look like a proper accordion UI.
+ * No custom JavaScript required — relies on native browser expand/collapse behavior.
+ */
+
+.wp-block-wpbits-faq-accordion {
+	max-width: 100%;
+	margin-block: 1.5em;
+}
+
+/* Individual accordion item */
+.wp-block-wpbits-faq-accordion .faq-accordion-item {
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	margin-bottom: 0.5em;
+	overflow: hidden;
+	transition: border-color 0.2s ease;
+}
+
+.wp-block-wpbits-faq-accordion .faq-accordion-item:last-child {
+	margin-bottom: 0;
+}
+
+.wp-block-wpbits-faq-accordion .faq-accordion-item[open] {
+	border-color: #0073aa;
+}
+
+/* Summary / clickable header */
+.wp-block-wpbits-faq-accordion .faq-accordion-item summary {
+	display: flex;
+	align-items: center;
+	gap: 0.75em;
+	padding: 1em 1.25em;
+	font-weight: 600;
+	font-size: 1em;
+	line-height: 1.4;
+	cursor: pointer;
+	list-style: none;
+	background-color: #f9f9f9;
+	border: none;
+	transition: background-color 0.2s ease;
+}
+
+.wp-block-wpbits-faq-accordion .faq-accordion-item summary:hover {
+	background-color: #f0f0f0;
+}
+
+.wp-block-wpbits-faq-accordion .faq-accordion-item summary:focus-visible {
+	outline: 2px solid #0073aa;
+	outline-offset: -2px;
+}
+
+/* Remove default marker in WebKit/Blink */
+.wp-block-wpbits-faq-accordion .faq-accordion-item summary::-webkit-details-marker {
+	display: none;
+}
+
+/* Custom expand/collapse indicator */
+.wp-block-wpbits-faq-accordion .faq-accordion-item summary::before {
+	content: "";
+	display: inline-block;
+	flex-shrink: 0;
+	width: 0.5em;
+	height: 0.5em;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: rotate(-45deg);
+	transition: transform 0.2s ease;
+}
+
+.wp-block-wpbits-faq-accordion .faq-accordion-item[open] > summary::before {
+	transform: rotate(45deg);
+}
+
+/* Content panel */
+.wp-block-wpbits-faq-accordion .faq-accordion-content {
+	padding: 1em 1.25em 1.25em;
+	line-height: 1.6;
+	border-top: 1px solid #eee;
+}

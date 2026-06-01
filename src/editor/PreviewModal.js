@@ -8,25 +8,21 @@ import { createBlock } from '@wordpress/blocks';
 import './preview-modal.scss';
 
 /**
- * Convert FAQ list to WordPress blocks.
+ * Convert FAQ list to a WordPress block.
  *
- * Each FAQ item becomes a core/heading block (level 3) with the question,
- * followed by a core/paragraph block with the answer.
+ * Creates a single wpbits/faq-accordion block containing all FAQ items
+ * as structured data in the block's `items` attribute.
  *
  * @param {Array} faqList Array of { question, answer } objects.
- * @return {Array} Array of block objects.
+ * @return {Array} Array containing one faq-accordion block.
  */
 function faqsToBlocks( faqList ) {
-	const blocks = [];
-	for ( const faq of faqList ) {
-		blocks.push(
-			createBlock( 'core/heading', { level: 3, content: faq.question } )
-		);
-		blocks.push(
-			createBlock( 'core/paragraph', { content: faq.answer } )
-		);
-	}
-	return blocks;
+	const items = faqList.map( ( faq ) => ( {
+		question: faq.question,
+		answer: faq.answer,
+	} ) );
+
+	return [ createBlock( 'wpbits/faq-accordion', { items } ) ];
 }
 
 /**

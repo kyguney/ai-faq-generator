@@ -250,6 +250,52 @@ if (!function_exists('update_option')) {
     }
 }
 
+// ─── WordPress HTML sanitization stubs ───────────────────────────────────────
+
+if (!function_exists('wp_kses_post')) {
+    /**
+     * Mimics WordPress wp_kses_post() behavior for testing:
+     * - Strips dangerous tags (script, iframe, object, embed, form, style)
+     * - Strips event handler attributes (onclick, onerror, onload, etc.)
+     * - Strips javascript: URLs
+     * - Preserves safe HTML (strong, em, a, p, br, ul, ol, li, etc.)
+     */
+    function wp_kses_post(string $content): string
+    {
+        // Remove dangerous tags and their content.
+        $content = preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $content);
+        $content = preg_replace('/<iframe\b[^>]*>.*?<\/iframe>/is', '', $content);
+        $content = preg_replace('/<object\b[^>]*>.*?<\/object>/is', '', $content);
+        $content = preg_replace('/<embed\b[^>]*\/?>/is', '', $content);
+        $content = preg_replace('/<form\b[^>]*>.*?<\/form>/is', '', $content);
+        $content = preg_replace('/<style\b[^>]*>.*?<\/style>/is', '', $content);
+
+        // Remove self-closing dangerous tags.
+        $content = preg_replace('/<script\b[^>]*\/?>/is', '', $content);
+        $content = preg_replace('/<iframe\b[^>]*\/?>/is', '', $content);
+        $content = preg_replace('/<object\b[^>]*\/?>/is', '', $content);
+
+        // Remove event handler attributes from remaining tags.
+        $content = preg_replace('/\s+on\w+\s*=\s*["\'][^"\']*["\']/i', '', $content);
+        $content = preg_replace('/\s+on\w+\s*=\s*\S+/i', '', $content);
+
+        // Remove javascript: URLs in href/src attributes.
+        $content = preg_replace('/(<[^>]+)(href|src)\s*=\s*["\']?\s*javascript:[^"\'>\s]*["\']?/i', '$1$2=""', $content);
+
+        return $content;
+    }
+}
+
+if (!function_exists('esc_attr')) {
+    /**
+     * Mimics WordPress esc_attr() behavior for testing.
+     */
+    function esc_attr(string $text): string
+    {
+        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    }
+}
+
 // ─── WordPress sanitization stubs ────────────────────────────────────────────
 
 if (!function_exists('wp_strip_all_tags')) {
@@ -705,6 +751,36 @@ if (!function_exists('wp_json_encode')) {
     }
 }
 
+// ─── WordPress output escaping and sanitization stubs ─────────────────────────
+
+if (!function_exists('wp_kses_post')) {
+    /**
+     * Mimics WordPress wp_kses_post() for testing purposes.
+     * Strips script/style tags but allows safe HTML.
+     */
+    function wp_kses_post(string $data): string
+    {
+        // Remove script and style tags and their content.
+        $data = preg_replace('#<script[^>]*>.*?</script>#is', '', $data);
+        $data = preg_replace('#<style[^>]*>.*?</style>#is', '', $data);
+        // Remove event handler attributes (onclick, onerror, etc.).
+        $data = preg_replace('/\s*on\w+\s*=\s*"[^"]*"/i', '', $data);
+        $data = preg_replace("/\s*on\w+\s*=\s*'[^']*'/i", '', $data);
+        // Allow safe HTML tags (p, a, strong, em, br, ul, ol, li, h1-h6, span, div, etc.).
+        return strip_tags($data, '<p><a><strong><em><br><ul><ol><li><h1><h2><h3><h4><h5><h6><span><div><blockquote><code><pre><img><table><thead><tbody><tr><th><td>');
+    }
+}
+
+if (!function_exists('esc_attr')) {
+    /**
+     * Mimics WordPress esc_attr() for testing purposes.
+     */
+    function esc_attr(string $text): string
+    {
+        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    }
+}
+
 // ─── Load OpenAIClient (after WP stubs are defined) ──────────────────────────
 
 require_once AFG_PLUGIN_PATH . 'includes/class-openai-client.php';
@@ -720,4 +796,46 @@ require_once AFG_PLUGIN_PATH . 'includes/services/class-faq-generator.php';
 // ─── Load Ajax_Generate_Faqs handler ─────────────────────────────────────────
 
 require_once AFG_PLUGIN_PATH . 'includes/class-ajax-generate-faqs.php';
+
+// ─── WordPress Block API stubs ───────────────────────────────────────────────
+
+/** @var array<int, array<string, mixed>> */
+global $afg_test_registered_blocks;
+$afg_test_registered_blocks = [];
+
+/** @var mixed Return value for register_block_type stub */
+global $afg_test_register_block_type_return;
+$afg_test_register_block_type_return = true;
+
+if (!function_exists('register_block_type')) {
+    /**
+     * Stub for WordPress register_block_type().
+     * Records calls and returns a configurable value for testing.
+     *
+     * @param string|WP_Block_Type $block_type Block type name or path.
+     * @param array $args Optional arguments for block type.
+     * @return mixed
+     */
+    function register_block_type($block_type, array $args = [])
+    {
+        global $afg_test_registered_blocks, $afg_test_register_block_type_return;
+        $afg_test_registered_blocks[] = [
+            'block_type' => $block_type,
+            'args'       => $args,
+        ];
+        return $afg_test_register_block_type_return;
+    }
+}
+
+/** @var array<int, string> */
+global $afg_test_error_log_messages;
+$afg_test_error_log_messages = [];
+
+// ─── Load FAQ Accordion block render callback ────────────────────────────────
+
+require_once AFG_PLUGIN_PATH . 'blocks/faq-accordion/render.php';
+
+// ─── Load FAQ Accordion Block registration ───────────────────────────────────
+
+require_once AFG_PLUGIN_PATH . 'blocks/faq-accordion/class-faq-accordion-block.php';
 

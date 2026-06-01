@@ -1,0 +1,108 @@
+/**
+ * Editor-only styles for the FAQ Accordion block.
+ *
+ * These styles apply only within the block editor canvas and do not
+ * affect the frontend rendering.
+ */
+
+// FAQ item editor row
+.faq-item-editor {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+	padding: 16px;
+	margin-bottom: 12px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	background: #fff;
+
+	&:last-of-type {
+		margin-bottom: 16px;
+	}
+
+	// Fields container (question + answer)
+	&__fields {
+		flex: 1;
+		min-width: 0;
+
+		.components-base-control {
+			margin-bottom: 12px;
+
+			&:last-child {
+				margin-bottom: 0;
+			}
+		}
+
+		.components-text-control__input,
+		.components-textarea-control__input {
+			width: 100%;
+			border: 1px solid #949494;
+			border-radius: 2px;
+
+			&:focus {
+				border-color: var(--wp-admin-theme-color, #007cba);
+				box-shadow: 0 0 0 1px var(--wp-admin-theme-color, #007cba);
+			}
+		}
+
+		.components-textarea-control__input {
+			min-height: 80px;
+			resize: vertical;
+		}
+	}
+
+	// Action buttons container (move up/down, remove)
+	&__actions {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		flex-shrink: 0;
+		padding-top: 24px; // Align with fields below their labels
+
+		.components-button {
+			min-width: 32px;
+			height: 32px;
+			padding: 0;
+			justify-content: center;
+
+			&.is-destructive {
+				color: #cc1818;
+
+				&:hover {
+					color: #a00;
+				}
+			}
+		}
+	}
+}
+
+// Add item button area
+.faq-accordion-add-item {
+	padding: 12px 0;
+	text-align: center;
+
+	.faq-accordion-add-button {
+		min-width: 140px;
+
+		&:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+	}
+}
+
+// Placeholder message (empty state)
+.faq-accordion-placeholder {
+	color: #757575;
+	font-style: italic;
+	margin-bottom: 12px;
+	text-align: center;
+}
+
+// Limit message (max items reached)
+.faq-accordion-limit-message {
+	color: #cc1818;
+	font-size: 12px;
+	margin-top: 8px;
+	text-align: center;
+}

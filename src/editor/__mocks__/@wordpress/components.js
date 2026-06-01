@@ -3,16 +3,17 @@
  */
 const React = require( 'react' );
 
-const Button = ( { children, onClick, isBusy, disabled, ...props } ) => {
+const Button = ( { children, onClick, isBusy, disabled, icon, label, size, isDestructive, ...props } ) => {
 	return React.createElement(
 		'button',
 		{
 			onClick,
 			disabled,
+			'aria-label': label,
 			'data-is-busy': isBusy ? 'true' : 'false',
 			...props,
 		},
-		children
+		children || label
 	);
 };
 

@@ -34,6 +34,9 @@ class Loader
     {
         spl_autoload_register([$this, 'autoload']);
 
+        // Load FAQ Accordion block registration (registers itself on init).
+        require_once AFG_PLUGIN_PATH . 'blocks/faq-accordion/class-faq-accordion-block.php';
+
         // Register FAQ post meta on init hook.
         add_action('init', [$this, 'register_faq_meta']);
 

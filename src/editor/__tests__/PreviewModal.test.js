@@ -188,7 +188,7 @@ describe( 'PreviewModal', () => {
 		expect( screen.getByLabelText( 'Question 3' ) ).toHaveValue( 'What is Gutenberg?' );
 	} );
 
-	it( 'insert converts FAQs to blocks and calls onInsertSuccess', () => {
+	it( 'insert converts FAQs to a single faq-accordion block and calls onInsertSuccess', () => {
 		const onInsertSuccess = jest.fn();
 		renderModal( { onInsertSuccess } );
 
@@ -201,16 +201,14 @@ describe( 'PreviewModal', () => {
 		expect( __mockInsertBlocks ).toHaveBeenCalledTimes( 1 );
 		const blocks = __mockInsertBlocks.mock.calls[ 0 ][ 0 ];
 
-		// 3 FAQs × 2 blocks each = 6 blocks
-		expect( blocks ).toHaveLength( 6 );
-
-		// First FAQ: heading + paragraph
-		expect( blocks[ 0 ] ).toEqual( { name: 'core/heading', attributes: { level: 3, content: 'What is WordPress?' } } );
-		expect( blocks[ 1 ] ).toEqual( { name: 'core/paragraph', attributes: { content: 'A content management system.' } } );
-
-		// Second FAQ
-		expect( blocks[ 2 ] ).toEqual( { name: 'core/heading', attributes: { level: 3, content: 'How to install plugins?' } } );
-		expect( blocks[ 3 ] ).toEqual( { name: 'core/paragraph', attributes: { content: 'Go to Plugins > Add New.' } } );
+		// All FAQs should be in a single faq-accordion block
+		expect( blocks ).toHaveLength( 1 );
+		expect( blocks[ 0 ].name ).toBe( 'wpbits/faq-accordion' );
+		expect( blocks[ 0 ].attributes.items ).toEqual( [
+			{ question: 'What is WordPress?', answer: 'A content management system.' },
+			{ question: 'How to install plugins?', answer: 'Go to Plugins > Add New.' },
+			{ question: 'What is Gutenberg?', answer: 'The WordPress block editor.' },
+		] );
 
 		// onInsertSuccess should be called with the FAQ list
 		expect( onInsertSuccess ).toHaveBeenCalledWith( defaultFaqs );

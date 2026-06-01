@@ -541,66 +541,42 @@ describe( 'Property 4: Block conversion correctness', () => {
 	/**
 	 * Validates: Requirements 6.2, 6.3
 	 */
-	it( 'produces exactly 2 × N blocks for a FAQ list of length N', () => {
+	it( 'produces exactly 1 faq-accordion block for any FAQ list', () => {
 		fc.assert(
 			fc.property( faqListArb, ( faqs ) => {
 				const blocks = faqsToBlocks( faqs );
-				expect( blocks ).toHaveLength( faqs.length * 2 );
+				expect( blocks ).toHaveLength( 1 );
+				expect( blocks[ 0 ].name ).toBe( 'wpbits/faq-accordion' );
 			} ),
 			{ numRuns: 30 }
 		);
 	} );
 
-	it( 'block at position 2i is a heading block (level 3) with the question at index i', () => {
+	it( 'the faq-accordion block items attribute contains all FAQ items in order', () => {
 		fc.assert(
 			fc.property( faqListArb, ( faqs ) => {
 				const blocks = faqsToBlocks( faqs );
+				const items = blocks[ 0 ].attributes.items;
+
+				expect( items ).toHaveLength( faqs.length );
 
 				for ( let i = 0; i < faqs.length; i++ ) {
-					const headingBlock = blocks[ 2 * i ];
-					expect( headingBlock.name ).toBe( 'core/heading' );
-					expect( headingBlock.attributes ).toEqual( {
-						level: 3,
-						content: faqs[ i ].question,
-					} );
+					expect( items[ i ].question ).toBe( faqs[ i ].question );
+					expect( items[ i ].answer ).toBe( faqs[ i ].answer );
 				}
 			} ),
 			{ numRuns: 30 }
 		);
 	} );
 
-	it( 'block at position 2i+1 is a paragraph block with the answer at index i', () => {
+	it( 'preserves FAQ list order in the generated block items', () => {
 		fc.assert(
 			fc.property( faqListArb, ( faqs ) => {
 				const blocks = faqsToBlocks( faqs );
+				const items = blocks[ 0 ].attributes.items;
 
-				for ( let i = 0; i < faqs.length; i++ ) {
-					const paragraphBlock = blocks[ 2 * i + 1 ];
-					expect( paragraphBlock.name ).toBe( 'core/paragraph' );
-					expect( paragraphBlock.attributes ).toEqual( {
-						content: faqs[ i ].answer,
-					} );
-				}
-			} ),
-			{ numRuns: 30 }
-		);
-	} );
-
-	it( 'preserves FAQ list order in the generated blocks', () => {
-		fc.assert(
-			fc.property( faqListArb, ( faqs ) => {
-				const blocks = faqsToBlocks( faqs );
-
-				// Reconstruct FAQ list from blocks and verify order matches
-				const reconstructed = [];
-				for ( let i = 0; i < blocks.length; i += 2 ) {
-					reconstructed.push( {
-						question: blocks[ i ].attributes.content,
-						answer: blocks[ i + 1 ].attributes.content,
-					} );
-				}
-
-				expect( reconstructed ).toEqual(
+				// Verify order matches
+				expect( items ).toEqual(
 					faqs.map( ( faq ) => ( {
 						question: faq.question,
 						answer: faq.answer,
@@ -864,13 +840,12 @@ describe( 'Property 6: Insertion uses final edited state', () => {
 					expect( __mockInsertBlocks ).toHaveBeenCalledTimes( 1 );
 					const insertedBlocks = __mockInsertBlocks.mock.calls[ 0 ][ 0 ];
 
-					// The block at position 2*editIndex should have the new question
-					const editedHeadingBlock = insertedBlocks[ 2 * editIndex ];
-					expect( editedHeadingBlock.name ).toBe( 'core/heading' );
-					expect( editedHeadingBlock.attributes.content ).toBe( newQuestion );
+					// Should be a single faq-accordion block
+					expect( insertedBlocks ).toHaveLength( 1 );
+					expect( insertedBlocks[ 0 ].name ).toBe( 'wpbits/faq-accordion' );
 
-					// Total blocks should be 2 × N
-					expect( insertedBlocks ).toHaveLength( faqs.length * 2 );
+					// The item at editIndex should have the new question
+					expect( insertedBlocks[ 0 ].attributes.items[ editIndex ].question ).toBe( newQuestion );
 
 					unmount();
 				}
@@ -931,13 +906,12 @@ describe( 'Property 6: Insertion uses final edited state', () => {
 					expect( __mockInsertBlocks ).toHaveBeenCalledTimes( 1 );
 					const insertedBlocks = __mockInsertBlocks.mock.calls[ 0 ][ 0 ];
 
-					// The block at position 2*editIndex + 1 should have the new answer
-					const editedParagraphBlock = insertedBlocks[ 2 * editIndex + 1 ];
-					expect( editedParagraphBlock.name ).toBe( 'core/paragraph' );
-					expect( editedParagraphBlock.attributes.content ).toBe( newAnswer );
+					// Should be a single faq-accordion block
+					expect( insertedBlocks ).toHaveLength( 1 );
+					expect( insertedBlocks[ 0 ].name ).toBe( 'wpbits/faq-accordion' );
 
-					// Total blocks should be 2 × N
-					expect( insertedBlocks ).toHaveLength( faqs.length * 2 );
+					// The item at editIndex should have the new answer
+					expect( insertedBlocks[ 0 ].attributes.items[ editIndex ].answer ).toBe( newAnswer );
 
 					unmount();
 				}
@@ -1007,11 +981,12 @@ describe( 'Property 6: Insertion uses final edited state', () => {
 					// Verify __mockInsertBlocks was called with correct block count
 					expect( __mockInsertBlocks ).toHaveBeenCalledTimes( 1 );
 					const insertedBlocks = __mockInsertBlocks.mock.calls[ 0 ][ 0 ];
-					expect( insertedBlocks ).toHaveLength( expectedFaqs.length * 2 );
+					expect( insertedBlocks ).toHaveLength( 1 );
+					expect( insertedBlocks[ 0 ].name ).toBe( 'wpbits/faq-accordion' );
+					expect( insertedBlocks[ 0 ].attributes.items ).toHaveLength( expectedFaqs.length );
 
-					// First heading block should have the edited question
-					expect( insertedBlocks[ 0 ].name ).toBe( 'core/heading' );
-					expect( insertedBlocks[ 0 ].attributes.content ).toBe( newQuestion );
+					// First item should have the edited question
+					expect( insertedBlocks[ 0 ].attributes.items[ 0 ].question ).toBe( newQuestion );
 
 					unmount();
 				}

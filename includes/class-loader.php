@@ -23,6 +23,7 @@ class Loader
             'WPBits\\AiFaqGenerator\\Admin\\Settings' => AFG_PLUGIN_PATH . 'admin/class-settings.php',
             'WPBits\\AiFaqGenerator\\Includes\\Interfaces\\AIProviderInterface' => AFG_PLUGIN_PATH . 'includes/interfaces/class-ai-provider-interface.php',
             'WPBits\\AiFaqGenerator\\Includes\\OpenAIClient' => AFG_PLUGIN_PATH . 'includes/class-openai-client.php',
+            'WPBits\\AiFaqGenerator\\Includes\\Services\\Prompt_Builder' => AFG_PLUGIN_PATH . 'includes/services/class-prompt-builder.php',
         ];
     }
 

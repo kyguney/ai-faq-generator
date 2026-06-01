@@ -215,6 +215,17 @@ if (!function_exists('update_option')) {
 
 // ─── WordPress sanitization stubs ────────────────────────────────────────────
 
+if (!function_exists('wp_strip_all_tags')) {
+    function wp_strip_all_tags(string $text, bool $remove_breaks = false): string
+    {
+        $text = strip_tags($text);
+        if ($remove_breaks) {
+            $text = preg_replace('/[\r\n\t ]+/', ' ', $text);
+        }
+        return trim($text);
+    }
+}
+
 if (!function_exists('sanitize_text_field')) {
     /**
      * Mimics WordPress sanitize_text_field() behavior:
@@ -465,3 +476,7 @@ if (!function_exists('is_wp_error')) {
 // ─── Load OpenAIClient (after WP stubs are defined) ──────────────────────────
 
 require_once AFG_PLUGIN_PATH . 'includes/class-openai-client.php';
+
+// ─── Load Prompt_Builder service ─────────────────────────────────────────────
+
+require_once __DIR__ . '/../includes/services/class-prompt-builder.php';

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace WPBits\AiFaqGenerator\Includes;
 
 use WPBits\AiFaqGenerator\Includes\Interfaces\AIProviderInterface;
+use WPBits\AiFaqGenerator\Includes\Services\Faq_Parser;
 
 /**
  * OpenAI-compatible API client.
@@ -55,7 +56,8 @@ class OpenAIClient implements AIProviderInterface
         $response = $this->sendRequest($body);
         $content  = $this->parseResponse($response);
 
-        return $this->parseFaqItems($content);
+        $parser = new Faq_Parser();
+        return $parser->parse($content);
     }
 
     /**
@@ -172,33 +174,5 @@ class OpenAIClient implements AIProviderInterface
         }
 
         return (string) $response['choices'][0]['message']['content'];
-    }
-
-    /**
-     * Decode the assistant content into FAQ items and validate structure.
-     *
-     * @param string $content The JSON string from the assistant message.
-     * @return array<int, array{question: string, answer: string}> Validated FAQ items.
-     * @throws \RuntimeException On invalid JSON or missing question/answer keys.
-     */
-    private function parseFaqItems(string $content): array
-    {
-        $decoded = json_decode($content, true);
-
-        if (!is_array($decoded)) {
-            throw new \RuntimeException('FAQ structure is invalid: content is not a JSON array');
-        }
-
-        foreach ($decoded as $index => $item) {
-            if (!is_array($item)
-                || !isset($item['question'], $item['answer'])
-                || !is_string($item['question']) || trim($item['question']) === ''
-                || !is_string($item['answer']) || trim($item['answer']) === ''
-            ) {
-                throw new \RuntimeException("FAQ structure is invalid: item at index {$index} is missing or has empty question/answer");
-            }
-        }
-
-        return $decoded;
     }
 }

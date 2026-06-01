@@ -84,16 +84,18 @@ ai-faq-generator/
 
 ### 1.0.0
 - Initial release
-- AI provider interface architecture
-- OpenAI-compatible API client
-- Prompt builder service
+- Plugin bootstrap with PSR-4 autoloading
+- Admin menu and REST API settings endpoints
+- AI provider interface (pluggable architecture)
+- OpenAI-compatible API client (OpenAI, OpenRouter, Ollama, DeepSeek, LocalAI, LM Studio)
+- Prompt builder service (stateless, deterministic)
+- FAQ response parser (markdown fence stripping, JSON validation)
 - Gutenberg FAQ block
 - FAQPage JSON-LD schema output
-- WordPress REST API settings endpoints
 
 ---
 
 ## Upgrade Notice
 
 ### 1.0.0
-Initial public release.
+Initial public release. Free tier limited to 5 FAQs per generation. Upgrade to Pro for unlimited FAQs, WooCommerce integration, bulk generation, and more.

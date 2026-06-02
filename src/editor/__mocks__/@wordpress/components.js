@@ -64,10 +64,57 @@ const TextareaControl = ( { label, value, onChange, disabled, ...props } ) => {
 	);
 };
 
+const PanelBody = ( { title, children, ...props } ) => {
+	return React.createElement(
+		'div',
+		{ 'data-testid': 'panel-body', ...props },
+		React.createElement( 'h2', null, title ),
+		children
+	);
+};
+
+const SelectControl = ( { label, value, options, onChange, ...props } ) => {
+	return React.createElement(
+		'div',
+		{ 'data-testid': 'select-control', ...props },
+		React.createElement( 'label', { htmlFor: `select-${ label }` }, label ),
+		React.createElement(
+			'select',
+			{
+				id: `select-${ label }`,
+				value,
+				onChange: ( e ) => onChange( e.target.value ),
+				'aria-label': label,
+			},
+			options.map( ( opt ) =>
+				React.createElement( 'option', { key: opt.value, value: opt.value }, opt.label )
+			)
+		)
+	);
+};
+
+const ToggleControl = ( { label, checked, onChange, ...props } ) => {
+	return React.createElement(
+		'div',
+		{ 'data-testid': 'toggle-control', ...props },
+		React.createElement( 'label', { htmlFor: `toggle-${ label }` }, label ),
+		React.createElement( 'input', {
+			id: `toggle-${ label }`,
+			type: 'checkbox',
+			checked,
+			onChange: ( e ) => onChange( e.target.checked ),
+			'aria-label': label,
+		} )
+	);
+};
+
 module.exports = {
 	Button,
 	Spinner,
 	Modal,
 	TextControl,
 	TextareaControl,
+	PanelBody,
+	SelectControl,
+	ToggleControl,
 };

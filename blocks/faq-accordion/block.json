@@ -25,6 +25,22 @@
                     }
                 }
             }
+        },
+        "titleTag": {
+            "type": "string",
+            "default": "h3"
+        },
+        "openFirstItem": {
+            "type": "boolean",
+            "default": false
+        },
+        "iconPosition": {
+            "type": "string",
+            "default": "left"
+        },
+        "enableAnimation": {
+            "type": "boolean",
+            "default": false
         }
     },
     "supports": {
@@ -34,5 +50,6 @@
     },
     "editorScript": "file:./build/index.js",
     "editorStyle": "file:./build/index.css",
-    "style": "file:./build/style-index.css"
+    "style": "file:./build/style-index.css",
+    "viewScript": "file:./build/frontend.js"
 }

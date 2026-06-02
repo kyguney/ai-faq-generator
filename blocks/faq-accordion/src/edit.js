@@ -1,19 +1,23 @@
 /**
  * WordPress dependencies
  */
-import { useBlockProps } from '@wordpress/block-editor';
+import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 
 /**
  * Internal dependencies
  */
 import FaqItemEditor from './components/FaqItemEditor';
 import AddItemButton from './components/AddItemButton';
+import InspectorPanel from './components/InspectorPanel';
+import { getBlockClasses } from './utils/getBlockClasses';
 
 const MAX_ITEMS = 50;
 
 export default function Edit( { attributes, setAttributes } ) {
-	const { items } = attributes;
-	const blockProps = useBlockProps();
+	const { items, titleTag, openFirstItem, iconPosition, enableAnimation } =
+		attributes;
+	const className = getBlockClasses( attributes );
+	const blockProps = useBlockProps( { className } );
 
 	const addItem = () => {
 		if ( items.length >= MAX_ITEMS ) {
@@ -52,24 +56,35 @@ export default function Edit( { attributes, setAttributes } ) {
 	};
 
 	return (
-		<div { ...blockProps }>
-			{ items.map( ( item, index ) => (
-				<FaqItemEditor
-					key={ index }
-					item={ item }
-					index={ index }
-					onUpdate={ updateItem }
-					onRemove={ removeItem }
-					onMove={ moveItem }
-					isFirst={ index === 0 }
-					isLast={ index === items.length - 1 }
+		<>
+			<InspectorControls>
+				<InspectorPanel
+					attributes={ attributes }
+					setAttributes={ setAttributes }
 				/>
-			) ) }
-			<AddItemButton
-				onClick={ addItem }
-				disabled={ items.length >= MAX_ITEMS }
-				itemCount={ items.length }
-			/>
-		</div>
+			</InspectorControls>
+			<div { ...blockProps }>
+				{ items.map( ( item, index ) => (
+					<FaqItemEditor
+						key={ index }
+						item={ item }
+						index={ index }
+						onUpdate={ updateItem }
+						onRemove={ removeItem }
+						onMove={ moveItem }
+						isFirst={ index === 0 }
+						isLast={ index === items.length - 1 }
+						isExpanded={
+							openFirstItem && index === 0 && items.length > 0
+						}
+					/>
+				) ) }
+				<AddItemButton
+					onClick={ addItem }
+					disabled={ items.length >= MAX_ITEMS }
+					itemCount={ items.length }
+				/>
+			</div>
+		</>
 	);
 }

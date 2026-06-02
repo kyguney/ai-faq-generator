@@ -12,13 +12,14 @@ import { chevronUp, chevronDown, close } from '@wordpress/icons';
  * and action controls (move up/down, remove).
  *
  * @param {Object}   props
- * @param {Object}   props.item     - The FAQ item { question, answer }.
- * @param {number}   props.index    - The index of this item in the list.
- * @param {Function} props.onUpdate - Callback: (index, field, value) => void.
- * @param {Function} props.onRemove - Callback: (index) => void.
- * @param {Function} props.onMove   - Callback: (index, direction) => void.
- * @param {boolean}  props.isFirst  - Whether this is the first item.
- * @param {boolean}  props.isLast   - Whether this is the last item.
+ * @param {Object}   props.item       - The FAQ item { question, answer }.
+ * @param {number}   props.index      - The index of this item in the list.
+ * @param {Function} props.onUpdate   - Callback: (index, field, value) => void.
+ * @param {Function} props.onRemove   - Callback: (index) => void.
+ * @param {Function} props.onMove     - Callback: (index, direction) => void.
+ * @param {boolean}  props.isFirst    - Whether this is the first item.
+ * @param {boolean}  props.isLast     - Whether this is the last item.
+ * @param {boolean}  props.isExpanded - Whether this item should appear expanded.
  */
 export default function FaqItemEditor( {
 	item,
@@ -28,9 +29,15 @@ export default function FaqItemEditor( {
 	onMove,
 	isFirst,
 	isLast,
+	isExpanded = false,
 } ) {
+	const classes = [ 'faq-item-editor' ];
+	if ( isExpanded ) {
+		classes.push( 'is-expanded' );
+	}
+
 	return (
-		<div className="faq-item-editor">
+		<div className={ classes.join( ' ' ) }>
 			<div className="faq-item-editor__fields">
 				<TextControl
 					label={ __( 'Question', 'ai-faq-generator' ) }

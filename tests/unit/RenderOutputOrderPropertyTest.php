@@ -40,9 +40,9 @@ class RenderOutputOrderPropertyTest extends TestCase
         // Output should not be empty for valid items.
         $this->assertNotEmpty($output, 'Render output must not be empty for valid FAQ items.');
 
-        // Verify the output contains the wrapper div.
-        $this->assertStringContainsString(
-            '<div class="wp-block-wpbits-faq-accordion">',
+        // Verify the output contains the wrapper div with base class.
+        $this->assertMatchesRegularExpression(
+            '/<div class="wp-block-wpbits-faq-accordion[^"]*">/',
             $output,
             'Output must contain the accordion wrapper div.'
         );
@@ -51,8 +51,8 @@ class RenderOutputOrderPropertyTest extends TestCase
         preg_match_all('#<summary[^>]*>(.*?)</summary>#s', $output, $summaryMatches);
         $renderedQuestions = $summaryMatches[1];
 
-        // Extract all <div ... class="faq-accordion-content">...</div> contents in order.
-        preg_match_all('#<div[^>]*class="faq-accordion-content"[^>]*>(.*?)</div>#s', $output, $contentMatches);
+        // Extract all answer contents from the inner wrapper divs in order.
+        preg_match_all('#<div[^>]*class="faq-accordion-content__inner"[^>]*>(.*?)</div>#s', $output, $contentMatches);
         $renderedAnswers = $contentMatches[1];
 
         // The number of rendered items must match the input count.
@@ -81,14 +81,13 @@ class RenderOutputOrderPropertyTest extends TestCase
             $sanitizedQuestion = wp_kses_post($item['question']);
             $sanitizedAnswer = wp_kses_post($item['answer']);
 
-            $this->assertSame(
+            // Question is now wrapped in a heading tag (default h3) inside summary.
+            $this->assertStringContainsString(
                 $sanitizedQuestion,
                 $renderedQuestions[$index],
                 sprintf(
-                    'Question at index %d must match. Expected "%s", got "%s".',
-                    $index,
-                    $sanitizedQuestion,
-                    $renderedQuestions[$index]
+                    'Question at index %d must contain the sanitized question text.',
+                    $index
                 )
             );
 

@@ -15,6 +15,7 @@ const faqAccordionBlockConfig = {
 	...defaultConfig,
 	entry: {
 		index: './blocks/faq-accordion/src/index.js',
+		frontend: './blocks/faq-accordion/src/frontend.js',
 	},
 	output: {
 		...defaultConfig.output,

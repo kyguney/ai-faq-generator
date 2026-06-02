@@ -80,3 +80,57 @@
 	line-height: 1.6;
 	border-top: 1px solid #eee;
 }
+
+/* ==========================================================================
+   Icon Position Variants
+   ========================================================================== */
+
+/*
+ * Icon position: left (default) — no additional rules needed.
+ * The existing ::before chevron + flex layout already places the icon before text.
+ * The .has-icon-left class is applied for semantic clarity and selector consistency.
+ */
+
+/* Icon position: right — move chevron after text */
+.wp-block-wpbits-faq-accordion.has-icon-right .faq-accordion-item summary {
+	flex-direction: row-reverse;
+	justify-content: space-between;
+}
+
+/* Icon position: none — hide chevron entirely */
+.wp-block-wpbits-faq-accordion.has-no-icon .faq-accordion-item summary::before {
+	display: none;
+}
+
+/* Animation using grid-template-rows trick for <details> */
+.wp-block-wpbits-faq-accordion.has-animation .faq-accordion-content {
+	display: grid;
+	grid-template-rows: 0fr;
+	transition: grid-template-rows 300ms ease;
+	overflow: hidden;
+	padding: 0;
+	border-top: 0 solid transparent;
+}
+
+.wp-block-wpbits-faq-accordion.has-animation .faq-accordion-content__inner {
+	min-height: 0;
+	overflow: hidden;
+	padding: 0;
+	transition: padding 300ms ease;
+}
+
+.wp-block-wpbits-faq-accordion.has-animation .faq-accordion-item[open]:not(.is-closing) .faq-accordion-content {
+	grid-template-rows: 1fr;
+	border-top: 1px solid #eee;
+}
+
+.wp-block-wpbits-faq-accordion.has-animation .faq-accordion-item[open]:not(.is-closing) .faq-accordion-content__inner {
+	padding: 1em 1.25em 1.25em;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+	.wp-block-wpbits-faq-accordion.has-animation .faq-accordion-content {
+		transition: none;
+	}
+}

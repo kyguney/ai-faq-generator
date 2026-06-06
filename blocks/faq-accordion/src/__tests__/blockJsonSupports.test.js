@@ -11,8 +11,8 @@ describe( 'block.json supports', () => {
 	const { supports } = blockJson;
 
 	describe( 'color support', () => {
-		it( 'enables text color', () => {
-			expect( supports.color.text ).toBe( true );
+		it( 'disables text color', () => {
+			expect( supports.color.text ).toBe( false );
 		} );
 
 		it( 'enables background color', () => {
@@ -21,16 +21,6 @@ describe( 'block.json supports', () => {
 
 		it( 'enables link color', () => {
 			expect( supports.color.link ).toBe( true );
-		} );
-	} );
-
-	describe( 'typography support', () => {
-		it( 'enables fontSize', () => {
-			expect( supports.typography.fontSize ).toBe( true );
-		} );
-
-		it( 'enables lineHeight', () => {
-			expect( supports.typography.lineHeight ).toBe( true );
 		} );
 	} );
 

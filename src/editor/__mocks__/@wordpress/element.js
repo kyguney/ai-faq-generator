@@ -13,5 +13,6 @@ module.exports = {
 	useRef: React.useRef,
 	useReducer: React.useReducer,
 	createElement: React.createElement,
+	cloneElement: React.cloneElement,
 	Fragment: React.Fragment,
 };

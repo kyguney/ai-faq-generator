@@ -31,7 +31,7 @@
 .wp-block-wpbits-faq-accordion .faq-accordion-item summary {
 	display: flex;
 	align-items: center;
-	gap: 0.75em;
+	gap: 0;
 	padding: var(--wp--custom--faq-accordion--header-padding, 1em 1.25em);
 	font-weight: 600;
 	font-size: 1em;
@@ -65,18 +65,20 @@
 /* Custom icon span */
 .wp-block-wpbits-faq-accordion .faq-accordion-icon {
 	flex-shrink: 0;
-	width: 0.5em;
-	height: 0.5em;
-	border-right: 2px solid currentColor;
-	border-bottom: 2px solid currentColor;
-	transform: rotate(-45deg);
-	transition: transform 0.2s ease;
-	display: inline-block;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	margin-right: 0.75em;
+	transition: transform 0.2s ease;
+}
+
+/* Ensure SVG icons respect the color property for icon color control */
+.wp-block-wpbits-faq-accordion .faq-accordion-icon svg {
+	fill: currentColor;
 }
 
 .wp-block-wpbits-faq-accordion .faq-accordion-item[open] > summary .faq-accordion-icon {
-	transform: rotate(45deg);
+	transform: rotate(180deg);
 }
 
 /* Icon position: right — move icon after text */
@@ -135,7 +137,7 @@
 }
 
 .wp-block-wpbits-faq-accordion.has-animation .faq-accordion-item[open]:not(.is-closing) .faq-accordion-content__inner {
-	padding: var(--wp--custom--faq-accordion--content-padding, 1em 1.25em 1.25em);
+	padding: 0;
 }
 
 /* Respect reduced motion */

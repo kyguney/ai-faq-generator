@@ -68,7 +68,7 @@ describe( 'Edit component', () => {
 			expect( setAttributes ).toHaveBeenCalledWith( {
 				items: [
 					{ question: 'Existing Q', answer: 'Existing A' },
-					{ question: '', answer: '' },
+					{ question: '', answer: '', _open: false },
 				],
 			} );
 		} );
@@ -81,7 +81,7 @@ describe( 'Edit component', () => {
 			fireEvent.click( screen.getByRole( 'button', { name: 'Add FAQ Item' } ) );
 
 			expect( setAttributes ).toHaveBeenCalledWith( {
-				items: [ { question: '', answer: '' } ],
+				items: [ { question: '', answer: '', _open: false } ],
 			} );
 		} );
 	} );

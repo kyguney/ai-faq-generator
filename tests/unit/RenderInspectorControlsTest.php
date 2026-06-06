@@ -21,7 +21,6 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 use function WPBits\AiFaqGenerator\Blocks\FaqAccordion\render_faq_accordion_block;
-use function WPBits\AiFaqGenerator\Blocks\FaqAccordion\get_validated_title_tag;
 use function WPBits\AiFaqGenerator\Blocks\FaqAccordion\get_validated_icon_position;
 use function WPBits\AiFaqGenerator\Blocks\FaqAccordion\get_validated_boolean;
 
@@ -39,15 +38,16 @@ class RenderInspectorControlsTest extends TestCase
         return $items;
     }
 
-    // ─── Title Tag Tests ─────────────────────────────────────────────────────
+    // ─── Title Tag Removal Tests ────────────────────────────────────────────
 
     /**
-     * **Validates: Requirements 7.1**
+     * **Validates: Title tag removed — question text rendered in span**
      *
-     * Rendering with titleTag "h2" wraps question text inside <h2> within <summary>.
+     * Rendering no longer wraps question text in heading tags.
+     * Question text appears inside <span class="faq-accordion-title">.
      */
     #[Test]
-    public function title_tag_h2_renders_h2_heading_inside_summary(): void
+    public function question_text_rendered_in_span_not_heading(): void
     {
         $html = render_faq_accordion_block([
             'items' => $this->validItems(1),
@@ -55,80 +55,9 @@ class RenderInspectorControlsTest extends TestCase
         ]);
 
         $this->assertStringContainsString('<summary', $html);
-        $this->assertStringContainsString('<h2>Question 1?</h2>', $html);
-    }
-
-    /**
-     * **Validates: Requirements 7.1**
-     *
-     * Rendering with titleTag "h3" wraps question text inside <h3> within <summary>.
-     */
-    #[Test]
-    public function title_tag_h3_renders_h3_heading_inside_summary(): void
-    {
-        $html = render_faq_accordion_block([
-            'items' => $this->validItems(1),
-            'titleTag' => 'h3',
-        ]);
-
-        $this->assertStringContainsString('<h3>Question 1?</h3>', $html);
-    }
-
-    /**
-     * **Validates: Requirements 7.1**
-     *
-     * Rendering with titleTag "h4" wraps question text inside <h4> within <summary>.
-     */
-    #[Test]
-    public function title_tag_h4_renders_h4_heading_inside_summary(): void
-    {
-        $html = render_faq_accordion_block([
-            'items' => $this->validItems(1),
-            'titleTag' => 'h4',
-        ]);
-
-        $this->assertStringContainsString('<h4>Question 1?</h4>', $html);
-    }
-
-    /**
-     * **Validates: Requirements 7.5**
-     *
-     * Invalid titleTag value falls back to h3 in rendered output.
-     */
-    #[Test]
-    public function invalid_title_tag_falls_back_to_h3(): void
-    {
-        $html = render_faq_accordion_block([
-            'items' => $this->validItems(1),
-            'titleTag' => 'h1',
-        ]);
-
-        $this->assertStringContainsString('<h3>Question 1?</h3>', $html);
-        $this->assertStringNotContainsString('<h1>', $html);
-    }
-
-    /**
-     * **Validates: Requirements 7.5**
-     *
-     * get_validated_title_tag returns h3 for missing titleTag attribute.
-     */
-    #[Test]
-    public function get_validated_title_tag_returns_h3_for_missing_attribute(): void
-    {
-        $this->assertSame('h3', get_validated_title_tag([]));
-    }
-
-    /**
-     * **Validates: Requirements 7.5**
-     *
-     * get_validated_title_tag returns h3 for arbitrary string value.
-     */
-    #[Test]
-    public function get_validated_title_tag_returns_h3_for_arbitrary_string(): void
-    {
-        $this->assertSame('h3', get_validated_title_tag(['titleTag' => 'div']));
-        $this->assertSame('h3', get_validated_title_tag(['titleTag' => '']));
-        $this->assertSame('h3', get_validated_title_tag(['titleTag' => 'H3']));
+        $this->assertStringContainsString('<span class="faq-accordion-title">Question 1?</span>', $html);
+        $this->assertStringNotContainsString('<h2>', $html);
+        $this->assertStringNotContainsString('<h3>', $html);
     }
 
     // ─── Open First Item Tests ───────────────────────────────────────────────
@@ -393,9 +322,9 @@ class RenderInspectorControlsTest extends TestCase
             'items' => $this->validItems(2),
         ]);
 
-        // Default title tag is h3.
-        $this->assertStringContainsString('<h3>Question 1?</h3>', $html);
-        $this->assertStringContainsString('<h3>Question 2?</h3>', $html);
+        // Question text in span (no heading tag).
+        $this->assertStringContainsString('<span class="faq-accordion-title">Question 1?</span>', $html);
+        $this->assertStringContainsString('<span class="faq-accordion-title">Question 2?</span>', $html);
 
         // Default openFirstItem is false — no open attribute.
         preg_match_all('/<details[^>]*>/', $html, $matches);
@@ -430,7 +359,7 @@ class RenderInspectorControlsTest extends TestCase
         // Should produce valid wrapper with base class and icon-left class.
         $this->assertStringContainsString('wp-block-wpbits-faq-accordion', $html);
         $this->assertStringContainsString('has-icon-left', $html);
-        $this->assertStringContainsString('<h3>What is FAQ?</h3>', $html);
+        $this->assertStringContainsString('<span class="faq-accordion-title">What is FAQ?</span>', $html);
         $this->assertStringContainsString('Frequently Asked Questions.', $html);
         $this->assertStringNotContainsString('has-animation', $html);
     }

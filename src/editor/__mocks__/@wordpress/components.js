@@ -3,14 +3,16 @@
  */
 const React = require( 'react' );
 
-const Button = ( { children, onClick, isBusy, disabled, icon, label, size, isDestructive, ...props } ) => {
+const Button = ( { children, onClick, isBusy, disabled, icon, label, size, isDestructive, variant, className, isPressed, ...props } ) => {
 	return React.createElement(
 		'button',
 		{
 			onClick,
 			disabled,
 			'aria-label': label,
+			'aria-pressed': isPressed ? 'true' : undefined,
 			'data-is-busy': isBusy ? 'true' : 'false',
+			className,
 			...props,
 		},
 		children || label
@@ -64,7 +66,7 @@ const TextareaControl = ( { label, value, onChange, disabled, ...props } ) => {
 	);
 };
 
-const PanelBody = ( { title, children, ...props } ) => {
+const PanelBody = ( { title, children, initialOpen, ...props } ) => {
 	return React.createElement(
 		'div',
 		{ 'data-testid': 'panel-body', ...props },
@@ -108,6 +110,92 @@ const ToggleControl = ( { label, checked, onChange, ...props } ) => {
 	);
 };
 
+const PanelRow = ( { children, ...props } ) => {
+	return React.createElement( 'div', { 'data-testid': 'panel-row', ...props }, children );
+};
+
+const RangeControl = ( { label, value, onChange, min, max, step, withInputField, renderTooltipContent, initialPosition, ...props } ) => {
+	return React.createElement(
+		'div',
+		{ 'data-testid': 'range-control' },
+		React.createElement( 'label', { htmlFor: `range-${ label }` }, label ),
+		React.createElement( 'input', {
+			id: `range-${ label }`,
+			type: 'range',
+			value,
+			onChange: ( e ) => onChange( Number( e.target.value ) ),
+			min,
+			max,
+			step,
+			'aria-label': label,
+		} )
+	);
+};
+
+const ColorPalette = ( { value, onChange, ...props } ) => {
+	return React.createElement(
+		'div',
+		{ 'data-testid': 'color-palette', ...props },
+		React.createElement( 'input', {
+			type: 'color',
+			value: value || '',
+			onChange: ( e ) => onChange( e.target.value ),
+			'aria-label': 'Color Palette',
+		} )
+	);
+};
+
+const ButtonGroup = ( { children, className, ...props } ) => {
+	return React.createElement(
+		'div',
+		{ 'data-testid': 'button-group', role: 'group', className, ...props },
+		children
+	);
+};
+
+const BaseControl = ( { label, id, children, ...props } ) => {
+	return React.createElement(
+		'div',
+		{ 'data-testid': 'base-control', ...props },
+		label && React.createElement( 'label', { htmlFor: id }, label ),
+		children
+	);
+};
+
+const ColorIndicator = ( { colorValue, ...props } ) => {
+	return React.createElement( 'span', {
+		'data-testid': 'color-indicator',
+		style: { backgroundColor: colorValue },
+		...props,
+	} );
+};
+
+const BoxControl = ( { label, values, onChange, ...props } ) => {
+	return React.createElement(
+		'div',
+		{ 'data-testid': 'box-control' },
+		React.createElement( 'label', null, label ),
+		React.createElement( 'input', {
+			type: 'text',
+			value: JSON.stringify( values ),
+			onChange: ( e ) => {
+				try { onChange( JSON.parse( e.target.value ) ); } catch ( err ) { /* noop */ }
+			},
+			'aria-label': label,
+		} )
+	);
+};
+
+const Dropdown = ( { renderToggle, renderContent, className, contentClassName, popoverProps, ...props } ) => {
+	const [ isOpen, setIsOpen ] = React.useState( false );
+	return React.createElement(
+		'div',
+		{ 'data-testid': 'dropdown', className },
+		renderToggle( { isOpen, onToggle: () => setIsOpen( ! isOpen ) } ),
+		isOpen && renderContent()
+	);
+};
+
 module.exports = {
 	Button,
 	Spinner,
@@ -115,6 +203,15 @@ module.exports = {
 	TextControl,
 	TextareaControl,
 	PanelBody,
+	PanelRow,
+	RangeControl,
 	SelectControl,
 	ToggleControl,
+	ColorPalette,
+	ButtonGroup,
+	BaseControl,
+	ColorIndicator,
+	BoxControl,
+	Dropdown,
+	__experimentalBoxControl: BoxControl,
 };

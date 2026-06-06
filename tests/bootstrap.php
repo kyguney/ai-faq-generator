@@ -296,6 +296,16 @@ if (!function_exists('esc_attr')) {
     }
 }
 
+if (!function_exists('absint')) {
+    /**
+     * Mimics WordPress absint() — returns the absolute integer value.
+     */
+    function absint($maybeint): int
+    {
+        return abs((int) $maybeint);
+    }
+}
+
 // ─── WordPress sanitization stubs ────────────────────────────────────────────
 
 if (!function_exists('wp_strip_all_tags')) {

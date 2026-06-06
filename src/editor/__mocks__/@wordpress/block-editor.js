@@ -5,10 +5,13 @@
  */
 const React = require( 'react' );
 
-const useBlockProps = ( props = {} ) => ( {
-	className: 'wp-block-mock',
-	...props,
-} );
+const useBlockProps = ( props = {} ) => {
+	const { className, ...rest } = props;
+	return {
+		className: className ? `wp-block-mock ${ className }` : 'wp-block-mock',
+		...rest,
+	};
+};
 
 const InspectorControls = ( { children } ) => {
 	return React.createElement( 'div', { 'data-testid': 'inspector-controls' }, children );

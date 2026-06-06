@@ -106,3 +106,16 @@
 	margin-top: 8px;
 	text-align: center;
 }
+
+// Icon color inheritance in editor preview
+.faq-accordion-icon {
+	svg {
+		fill: currentColor;
+		stroke: currentColor;
+	}
+
+	// When inline color is set, ensure SVG respects it
+	&[style*="color"] svg {
+		fill: currentColor !important;
+	}
+}

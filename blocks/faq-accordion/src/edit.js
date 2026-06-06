@@ -2,6 +2,8 @@
  * WordPress dependencies
  */
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
+import { Icon } from '@wordpress/icons';
+import { cloneElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -10,22 +12,18 @@ import FaqItemEditor from './components/FaqItemEditor';
 import AddItemButton from './components/AddItemButton';
 import InspectorPanel from './components/InspectorPanel';
 import { getBlockClasses } from './utils/getBlockClasses';
+import { buildTitleHeadingStyle } from '../../../src/utils/buildTitleStyles';
+import {
+	resolveIconId,
+	getIconSize,
+	ICON_REGISTRY,
+} from '../../../src/utils/iconRegistry';
 
 const MAX_ITEMS = 50;
-
-// Available icons
-const ICONS = {
-	chevron: '▾',
-	'chevron-right': '▸',
-	plus: '+',
-	arrow: '→',
-	none: null,
-};
 
 export default function Edit( { attributes, setAttributes } ) {
 	const {
 		items,
-		titleTag,
 		openFirstItem,
 		iconPosition,
 		enableAnimation,
@@ -33,12 +31,19 @@ export default function Edit( { attributes, setAttributes } ) {
 		titleFontSize,
 		titleFontFamily,
 		titlePadding,
+		titleBackgroundColor,
+		titleFontWeight,
+		titleFontStyle,
+		titleTextDecoration,
+		titleTextTransform,
 		contentColor,
 		contentFontSize,
 		contentFontFamily,
 		contentPadding,
+		contentBackgroundColor,
 		itemSpacing,
 		selectedIcon,
+		iconColor,
 		layoutMode,
 	} = attributes;
 
@@ -49,12 +54,16 @@ export default function Edit( { attributes, setAttributes } ) {
 	const getTitleStyle = () => {
 		const style = {};
 		if ( titleColor ) style.color = titleColor;
+		if ( titleBackgroundColor ) style.backgroundColor = titleBackgroundColor;
 		if ( titleFontSize && titleFontSize > 0 ) {
 			style.fontSize = `${ titleFontSize }px`;
 		}
 		if ( titleFontFamily ) style.fontFamily = titleFontFamily;
-		if ( titlePadding !== undefined ) {
-			style.padding = `${ titlePadding }px`;
+		if ( titlePadding ) {
+			style.paddingTop = titlePadding.top || '16px';
+			style.paddingRight = titlePadding.right || '20px';
+			style.paddingBottom = titlePadding.bottom || '16px';
+			style.paddingLeft = titlePadding.left || '20px';
 		}
 		return style;
 	};
@@ -62,12 +71,16 @@ export default function Edit( { attributes, setAttributes } ) {
 	const getContentStyle = () => {
 		const style = {};
 		if ( contentColor ) style.color = contentColor;
+		if ( contentBackgroundColor ) style.backgroundColor = contentBackgroundColor;
 		if ( contentFontSize && contentFontSize > 0 ) {
 			style.fontSize = `${ contentFontSize }px`;
 		}
 		if ( contentFontFamily ) style.fontFamily = contentFontFamily;
-		if ( contentPadding !== undefined ) {
-			style.padding = `${ contentPadding }px`;
+		if ( contentPadding ) {
+			style.paddingTop = contentPadding.top || '16px';
+			style.paddingRight = contentPadding.right || '20px';
+			style.paddingBottom = contentPadding.bottom || '16px';
+			style.paddingLeft = contentPadding.left || '20px';
 		}
 		return style;
 	};
@@ -137,62 +150,73 @@ export default function Edit( { attributes, setAttributes } ) {
 			);
 		}
 
-		const TitleTag = titleTag || 'h3';
-		const iconChar = ICONS[ selectedIcon ] || ICONS.chevron;
+		const resolvedIconId = resolveIconId( selectedIcon );
+		const iconEntry = ICON_REGISTRY[ resolvedIconId ];
+		const iconSize = getIconSize( titleFontSize );
+		const titleHeadingStyle = buildTitleHeadingStyle( attributes );
+
+		const renderIcon = () => {
+			if ( resolvedIconId === 'none' ) {
+				return null;
+			}
+			if ( iconEntry.icon ) {
+				return <Icon icon={ iconEntry.icon } size={ iconSize } />;
+			}
+			if ( iconEntry.svg ) {
+				return cloneElement( iconEntry.svg, {
+					width: iconSize,
+					height: iconSize,
+				} );
+			}
+			return null;
+		};
+
+		// Icon wrapper style — sets color which SVGs inherit via fill="currentColor"
+		const iconStyle = iconColor
+			? { color: iconColor }
+			: {};
 
 		return (
-			<div className="wp-block-wpbits-faq-accordion">
+			<>
 				{ items.map( ( item, index ) => {
 					const isOpen = item._open || ( openFirstItem && index === 0 );
 
 					return (
-						<div
+						<details
 							key={ index }
-							className={ `faq-accordion-item ${ isOpen ? 'is-open' : '' }` }
+							className="faq-accordion-item"
+							open={ isOpen }
 							style={ getItemStyle() }
 						>
-							<div
+							<summary
 								className="faq-accordion-summary"
-								style={ getTitleStyle() }
-								onClick={ () => toggleItem( index ) }
-								onKeyDown={ ( e ) => {
-									if ( e.key === 'Enter' || e.key === ' ' ) {
-										e.preventDefault();
-										toggleItem( index );
-									}
+								style={ { ...getTitleStyle(), ...titleHeadingStyle } }
+								onClick={ ( e ) => {
+									e.preventDefault();
+									toggleItem( index );
 								} }
-								role="button"
-								tabIndex={ 0 }
 							>
-								{ iconChar && iconPosition !== 'none' && (
-									<span
-										className="faq-accordion-icon"
-										style={ {
-											marginRight: '0.75em',
-											order: iconPosition === 'right' ? 1 : 0,
-											transition: enableAnimation ? 'transform 0.2s ease' : 'none',
-											transform: isOpen ? 'rotate(45deg)' : 'rotate(-45deg)',
-										} }
-									>
-										{ iconChar }
+								{ resolvedIconId !== 'none' && iconPosition !== 'none' && (
+									<span className="faq-accordion-icon" style={ iconStyle }>
+										{ renderIcon() }
 									</span>
 								) }
-								<TitleTag style={ { margin: 0, fontWeight: 600 } }>
+								<span className="faq-accordion-title">
 									{ item.question || `Question ${ index + 1 }` }
-								</TitleTag>
-							</div>
-							{ isOpen && (
-								<div
-									className="faq-accordion-content"
-									style={ getContentStyle() }
-								>
+								</span>
+							</summary>
+							<div
+								className="faq-accordion-content"
+								style={ getContentStyle() }
+							>
+								<div className="faq-accordion-content__inner">
 									{ item.answer || 'Answer content will appear here...' }
 								</div>
-							) }
-						</div>
+							</div>
+						</details>
 					);
 				} ) }
-			</div>
+			</>
 		);
 	};
 

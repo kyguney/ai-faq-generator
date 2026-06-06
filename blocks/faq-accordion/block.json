@@ -42,6 +42,26 @@
             "type": "boolean",
             "default": false
         },
+        "titleBackgroundColor": {
+            "type": "string",
+            "default": ""
+        },
+        "titleFontWeight": {
+            "type": "string",
+            "default": ""
+        },
+        "titleFontStyle": {
+            "type": "string",
+            "default": ""
+        },
+        "titleTextDecoration": {
+            "type": "string",
+            "default": ""
+        },
+        "titleTextTransform": {
+            "type": "string",
+            "default": ""
+        },
         "titleColor": {
             "type": "string",
             "default": ""
@@ -55,8 +75,17 @@
             "default": ""
         },
         "titlePadding": {
-            "type": "number",
-            "default": 16
+            "type": "object",
+            "default": {
+                "top": "16px",
+                "right": "20px",
+                "bottom": "16px",
+                "left": "20px"
+            }
+        },
+        "contentBackgroundColor": {
+            "type": "string",
+            "default": ""
         },
         "contentColor": {
             "type": "string",
@@ -71,16 +100,25 @@
             "default": ""
         },
         "contentPadding": {
-            "type": "number",
-            "default": 16
+            "type": "object",
+            "default": {
+                "top": "16px",
+                "right": "20px",
+                "bottom": "16px",
+                "left": "20px"
+            }
         },
         "itemSpacing": {
             "type": "number",
             "default": 8
         },
+        "iconColor": {
+            "type": "string",
+            "default": ""
+        },
         "selectedIcon": {
             "type": "string",
-            "default": "chevron"
+            "default": "chevron-down"
         },
         "layoutMode": {
             "type": "string",
@@ -92,13 +130,9 @@
         "align": ["wide", "full"],
         "multiple": false,
         "color": {
-            "text": true,
+            "text": false,
             "background": true,
             "link": true
-        },
-        "typography": {
-            "fontSize": true,
-            "lineHeight": true
         },
         "spacing": {
             "padding": true,

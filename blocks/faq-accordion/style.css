@@ -52,6 +52,17 @@
 	outline-offset: -2px;
 }
 
+/* Fallback focus style for browsers without :focus-visible support */
+.wp-block-wpbits-faq-accordion .faq-accordion-item summary:focus {
+	outline: 2px solid var(--wp--custom--faq-accordion--accent-color, #0073aa);
+	outline-offset: -2px;
+}
+
+/* Remove outline on mouse click (only show for keyboard focus) */
+.wp-block-wpbits-faq-accordion .faq-accordion-item summary:focus:not(:focus-visible) {
+	outline: none;
+}
+
 /* Remove default marker in WebKit/Blink */
 .wp-block-wpbits-faq-accordion .faq-accordion-item summary::-webkit-details-marker {
 	display: none;

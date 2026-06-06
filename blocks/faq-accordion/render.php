@@ -265,13 +265,15 @@ function render_faq_accordion_block(array $attributes, string $content = '', ?\W
         }
 
         $output .= '<details class="faq-accordion-item"' . $item_style . $open_attr . '>';
-        $output .= '<summary' . $summary_style . ' aria-expanded="false" aria-controls="' . esc_attr($panel_id) . '">';
+        $aria_expanded = (!empty($open_attr)) ? 'true' : 'false';
+        $output .= '<summary' . $summary_style . ' aria-expanded="' . $aria_expanded . '" aria-controls="' . esc_attr($panel_id) . '" role="button">';
         if ($show_icon) {
-            $output .= '<span class="faq-accordion-icon"' . $icon_style_attr . '>' . $icon_markup . '</span>';
+            $output .= '<span class="faq-accordion-icon" aria-hidden="true"' . $icon_style_attr . '>' . $icon_markup . '</span>';
         }
-        $output .= '<span class="faq-accordion-title">' . $question . '</span>';
+        $summary_id = 'faq-summary-' . ($index + 1);
+        $output .= '<span class="faq-accordion-title" id="' . esc_attr($summary_id) . '">' . $question . '</span>';
         $output .= '</summary>';
-        $output .= '<div id="' . esc_attr($panel_id) . '" class="faq-accordion-content"' . $content_style . '>';
+        $output .= '<div id="' . esc_attr($panel_id) . '" class="faq-accordion-content" role="region" aria-labelledby="' . esc_attr($summary_id) . '"' . $content_style . '>';
         $output .= '<div class="faq-accordion-content__inner">';
         $output .= $answer;
         $output .= '</div>';

@@ -202,7 +202,7 @@ class RenderSvgIconTest extends TestCase
             'iconPosition' => 'left',
         ]);
 
-        $this->assertStringContainsString('<span class="faq-accordion-icon">', $result);
+        $this->assertStringContainsString('class="faq-accordion-icon"', $result);
         $this->assertStringContainsString('<svg', $result);
     }
 
@@ -220,7 +220,7 @@ class RenderSvgIconTest extends TestCase
             'iconPosition' => 'left',
         ]);
 
-        $this->assertStringContainsString('<span class="faq-accordion-icon">', $result);
+        $this->assertStringContainsString('class="faq-accordion-icon"', $result);
         $this->assertStringContainsString('<svg', $result);
     }
 }

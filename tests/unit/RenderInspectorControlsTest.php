@@ -55,7 +55,8 @@ class RenderInspectorControlsTest extends TestCase
         ]);
 
         $this->assertStringContainsString('<summary', $html);
-        $this->assertStringContainsString('<span class="faq-accordion-title">Question 1?</span>', $html);
+        $this->assertStringContainsString('class="faq-accordion-title"', $html);
+        $this->assertStringContainsString('>Question 1?</span>', $html);
         $this->assertStringNotContainsString('<h2>', $html);
         $this->assertStringNotContainsString('<h3>', $html);
     }
@@ -323,8 +324,9 @@ class RenderInspectorControlsTest extends TestCase
         ]);
 
         // Question text in span (no heading tag).
-        $this->assertStringContainsString('<span class="faq-accordion-title">Question 1?</span>', $html);
-        $this->assertStringContainsString('<span class="faq-accordion-title">Question 2?</span>', $html);
+        $this->assertStringContainsString('class="faq-accordion-title"', $html);
+        $this->assertStringContainsString('>Question 1?</span>', $html);
+        $this->assertStringContainsString('>Question 2?</span>', $html);
 
         // Default openFirstItem is false — no open attribute.
         preg_match_all('/<details[^>]*>/', $html, $matches);
@@ -359,7 +361,8 @@ class RenderInspectorControlsTest extends TestCase
         // Should produce valid wrapper with base class and icon-left class.
         $this->assertStringContainsString('wp-block-wpbits-faq-accordion', $html);
         $this->assertStringContainsString('has-icon-left', $html);
-        $this->assertStringContainsString('<span class="faq-accordion-title">What is FAQ?</span>', $html);
+        $this->assertStringContainsString('class="faq-accordion-title"', $html);
+        $this->assertStringContainsString('>What is FAQ?</span>', $html);
         $this->assertStringContainsString('Frequently Asked Questions.', $html);
         $this->assertStringNotContainsString('has-animation', $html);
     }

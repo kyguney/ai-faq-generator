@@ -169,7 +169,7 @@ export default function Edit( { attributes, setAttributes } ) {
 										className="faq-accordion-icon"
 										style={ {
 											marginRight: '0.75em',
-											display: 'inline-block',
+											order: iconPosition === 'right' ? 1 : 0,
 											transition: enableAnimation ? 'transform 0.2s ease' : 'none',
 											transform: isOpen ? 'rotate(45deg)' : 'rotate(-45deg)',
 										} }
@@ -177,9 +177,9 @@ export default function Edit( { attributes, setAttributes } ) {
 										{ iconChar }
 									</span>
 								) }
-								<span>
+								<TitleTag style={ { margin: 0, fontWeight: 600 } }>
 									{ item.question || `Question ${ index + 1 }` }
-								</span>
+								</TitleTag>
 							</div>
 							{ isOpen && (
 								<div

@@ -57,10 +57,13 @@
 	display: none;
 }
 
-/* Custom expand/collapse indicator */
+/* Custom expand/collapse indicator — hidden when using custom icon span */
 .wp-block-wpbits-faq-accordion .faq-accordion-item summary::before {
-	content: "";
-	display: inline-block;
+	display: none;
+}
+
+/* Custom icon span */
+.wp-block-wpbits-faq-accordion .faq-accordion-icon {
 	flex-shrink: 0;
 	width: 0.5em;
 	height: 0.5em;
@@ -68,10 +71,23 @@
 	border-bottom: 2px solid currentColor;
 	transform: rotate(-45deg);
 	transition: transform 0.2s ease;
+	display: inline-block;
+	margin-right: 0.75em;
 }
 
-.wp-block-wpbits-faq-accordion .faq-accordion-item[open] > summary::before {
+.wp-block-wpbits-faq-accordion .faq-accordion-item[open] > summary .faq-accordion-icon {
 	transform: rotate(45deg);
+}
+
+/* Icon position: right — move icon after text */
+.wp-block-wpbits-faq-accordion.has-icon-right .faq-accordion-item summary {
+	flex-direction: row-reverse;
+	justify-content: space-between;
+}
+
+.wp-block-wpbits-faq-accordion.has-icon-right .faq-accordion-icon {
+	margin-right: 0;
+	margin-left: 0.75em;
 }
 
 /* Content panel */
@@ -91,14 +107,8 @@
  * The .has-icon-left class is applied for semantic clarity and selector consistency.
  */
 
-/* Icon position: right — move chevron after text */
-.wp-block-wpbits-faq-accordion.has-icon-right .faq-accordion-item summary {
-	flex-direction: row-reverse;
-	justify-content: space-between;
-}
-
-/* Icon position: none — hide chevron entirely */
-.wp-block-wpbits-faq-accordion.has-no-icon .faq-accordion-item summary::before {
+/* Icon position: none — hide icon entirely */
+.wp-block-wpbits-faq-accordion.has-no-icon .faq-accordion-icon {
 	display: none;
 }
 

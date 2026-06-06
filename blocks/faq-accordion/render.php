@@ -73,10 +73,74 @@ function render_faq_accordion_block(array $attributes, string $content = '', ?\W
     }
 
     // Validate new attributes using helper functions.
-    $title_tag      = get_validated_title_tag($attributes);
-    $icon_position  = get_validated_icon_position($attributes);
-    $open_first_item = get_validated_boolean($attributes, 'openFirstItem');
+    $title_tag       = get_validated_title_tag($attributes);
+    $icon_position   = get_validated_icon_position($attributes);
+    $open_first_item  = get_validated_boolean($attributes, 'openFirstItem');
     $enable_animation = get_validated_boolean($attributes, 'enableAnimation');
+
+    // New styling attributes
+    $title_color     = $attributes['titleColor'] ?? '';
+    $title_font_size = $attributes['titleFontSize'] ?? 0;
+    $title_font_family = $attributes['titleFontFamily'] ?? '';
+    $title_padding    = $attributes['titlePadding'] ?? 16;
+    $content_color    = $attributes['contentColor'] ?? '';
+    $content_font_size = $attributes['contentFontSize'] ?? 0;
+    $content_font_family = $attributes['contentFontFamily'] ?? '';
+    $content_padding  = $attributes['contentPadding'] ?? 16;
+    $item_spacing     = $attributes['itemSpacing'] ?? 8;
+    $selected_icon    = $attributes['selectedIcon'] ?? 'chevron';
+
+    // Build inline styles
+    $title_style = '';
+    $title_styles_arr = [];
+    if (!empty($title_color)) {
+        $title_styles_arr[] = 'color:' . esc_attr($title_color);
+    }
+    if (!empty($title_font_size) && $title_font_size > 0) {
+        $title_styles_arr[] = 'font-size:' . absint($title_font_size) . 'px';
+    }
+    if (!empty($title_font_family)) {
+        $title_styles_arr[] = 'font-family:' . esc_attr($title_font_family);
+    }
+    if ($title_padding !== 16) {
+        $title_styles_arr[] = 'padding:' . absint($title_padding) . 'px';
+    }
+    if (!empty($title_styles_arr)) {
+        $title_style = ' style="' . implode(';', $title_styles_arr) . '"';
+    }
+
+    $content_style = '';
+    $content_styles_arr = [];
+    if (!empty($content_color)) {
+        $content_styles_arr[] = 'color:' . esc_attr($content_color);
+    }
+    if (!empty($content_font_size) && $content_font_size > 0) {
+        $content_styles_arr[] = 'font-size:' . absint($content_font_size) . 'px';
+    }
+    if (!empty($content_font_family)) {
+        $content_styles_arr[] = 'font-family:' . esc_attr($content_font_family);
+    }
+    if ($content_padding !== 16) {
+        $content_styles_arr[] = 'padding:' . absint($content_padding) . 'px';
+    }
+    if (!empty($content_styles_arr)) {
+        $content_style = ' style="' . implode(';', $content_styles_arr) . '"';
+    }
+
+    $item_style = '';
+    if ($item_spacing !== 8) {
+        $item_style = ' style="margin-bottom:' . absint($item_spacing) . 'px"';
+    }
+
+    // Icon character mapping
+    $icon_chars = [
+        'chevron' => '▾',
+        'chevron-right' => '▸',
+        'plus' => '+',
+        'arrow' => '→',
+    ];
+    $icon_char = $icon_chars[$selected_icon] ?? '▾';
+    $show_icon = $selected_icon !== 'none' && $icon_position !== 'none';
 
     // Build extra classes: icon-position class + optional animation class.
     $icon_class_map = [
@@ -124,11 +188,15 @@ function render_faq_accordion_block(array $attributes, string $content = '', ?\W
             $is_first_valid_item = false;
         }
 
-        $output .= '<details class="faq-accordion-item"' . $open_attr . '>';
+        $output .= '<details class="faq-accordion-item"' . $item_style . $open_attr . '>';
         $output .= '<summary aria-expanded="false" aria-controls="' . esc_attr($panel_id) . '">';
-        $output .= '<' . $title_tag . '>' . $question . '</' . $title_tag . '>';
+        if ($show_icon) {
+            $icon_order = $icon_position === 'right' ? ' style="order:1"' : '';
+            $output .= '<span class="faq-accordion-icon"' . $icon_order . '>' . $icon_char . '</span>';
+        }
+        $output .= '<' . $title_tag . $title_style . '>' . $question . '</' . $title_tag . '>';
         $output .= '</summary>';
-        $output .= '<div id="' . esc_attr($panel_id) . '" class="faq-accordion-content">';
+        $output .= '<div id="' . esc_attr($panel_id) . '" class="faq-accordion-content"' . $content_style . '>';
         $output .= '<div class="faq-accordion-content__inner">';
         $output .= $answer;
         $output .= '</div>';

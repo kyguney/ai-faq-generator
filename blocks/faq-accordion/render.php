@@ -57,10 +57,15 @@ function get_validated_boolean(array $attributes, string $key): bool {
  * Receives block attributes, validates and sanitizes FAQ items,
  * and returns the accordion HTML using native <details>/<summary> elements.
  *
- * @param array $attributes Block attributes containing the FAQ items.
+ * Uses get_block_wrapper_attributes() to merge custom classes (icon position,
+ * animation) with WordPress supports-generated classes and inline styles.
+ *
+ * @param array    $attributes Block attributes containing the FAQ items.
+ * @param string   $content    Block inner content (unused for dynamic blocks).
+ * @param \WP_Block $block     Block instance.
  * @return string The rendered HTML output, or empty string if no valid items.
  */
-function render_faq_accordion_block(array $attributes): string {
+function render_faq_accordion_block(array $attributes, string $content = '', ?\WP_Block $block = null): string {
     $items = $attributes['items'] ?? [];
 
     if (!is_array($items) || empty($items)) {
@@ -73,19 +78,20 @@ function render_faq_accordion_block(array $attributes): string {
     $open_first_item = get_validated_boolean($attributes, 'openFirstItem');
     $enable_animation = get_validated_boolean($attributes, 'enableAnimation');
 
-    // Build CSS class string: base class + icon-position class + optional animation class.
+    // Build extra classes: icon-position class + optional animation class.
     $icon_class_map = [
         'left'  => 'has-icon-left',
         'right' => 'has-icon-right',
         'none'  => 'has-no-icon',
     ];
-    $classes = 'wp-block-wpbits-faq-accordion ' . $icon_class_map[$icon_position];
+    $extra_classes = $icon_class_map[$icon_position];
 
     if ($enable_animation) {
-        $classes .= ' has-animation';
+        $extra_classes .= ' has-animation';
     }
 
-    $output = '<div class="' . esc_attr($classes) . '">';
+    $wrapper_attributes = get_block_wrapper_attributes(['class' => $extra_classes]);
+    $output = '<div ' . $wrapper_attributes . '>';
 
     $is_first_valid_item = true;
 

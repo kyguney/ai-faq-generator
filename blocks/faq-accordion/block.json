@@ -46,7 +46,26 @@
     "supports": {
         "html": false,
         "align": ["wide", "full"],
-        "multiple": false
+        "multiple": false,
+        "color": {
+            "text": true,
+            "background": true,
+            "link": true
+        },
+        "typography": {
+            "fontSize": true,
+            "lineHeight": true
+        },
+        "spacing": {
+            "padding": true,
+            "margin": true
+        },
+        "border": {
+            "color": true,
+            "style": true,
+            "width": true,
+            "radius": true
+        }
     },
     "editorScript": "file:./build/index.js",
     "editorStyle": "file:./build/index.css",

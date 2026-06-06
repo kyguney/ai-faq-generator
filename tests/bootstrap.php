@@ -831,6 +831,61 @@ if (!function_exists('register_block_type')) {
 global $afg_test_error_log_messages;
 $afg_test_error_log_messages = [];
 
+// ─── WordPress Block Instance class stub ─────────────────────────────────────
+
+if (!class_exists('WP_Block')) {
+    class WP_Block
+    {
+        public array $attributes = [];
+        public ?array $parsed_block = null;
+        public ?string $name = null;
+
+        public function __construct(array $parsed_block = [], array $available_context = [])
+        {
+            $this->parsed_block = $parsed_block;
+            $this->attributes = $parsed_block['attrs'] ?? [];
+            $this->name = $parsed_block['blockName'] ?? null;
+        }
+    }
+}
+
+// ─── get_block_wrapper_attributes() stub ─────────────────────────────────────
+
+if (!function_exists('get_block_wrapper_attributes')) {
+    /**
+     * Stub for WordPress get_block_wrapper_attributes().
+     * Generates a string of HTML attributes for the block wrapper element,
+     * merging the base block class with any extra attributes provided.
+     *
+     * In real WordPress, this function also injects supports-generated inline
+     * styles (e.g., from style attributes set by the user via the block supports
+     * panels). The global $afg_test_block_wrapper_styles can be set to simulate
+     * these supports-generated inline styles.
+     *
+     * @param array $extra_attributes Optional. Extra attributes to merge.
+     * @return string HTML attribute string.
+     */
+    function get_block_wrapper_attributes(array $extra_attributes = []): string
+    {
+        global $afg_test_block_wrapper_styles;
+
+        $classes = 'wp-block-wpbits-faq-accordion';
+
+        if (!empty($extra_attributes['class'])) {
+            $classes .= ' ' . $extra_attributes['class'];
+        }
+
+        $attrs = 'class="' . esc_attr($classes) . '"';
+
+        // Simulate supports-generated inline styles if configured.
+        if (!empty($afg_test_block_wrapper_styles)) {
+            $attrs .= ' style="' . esc_attr($afg_test_block_wrapper_styles) . '"';
+        }
+
+        return $attrs;
+    }
+}
+
 // ─── Load FAQ Accordion block render callback ────────────────────────────────
 
 require_once AFG_PLUGIN_PATH . 'blocks/faq-accordion/render.php';

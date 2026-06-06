@@ -41,6 +41,50 @@
         "enableAnimation": {
             "type": "boolean",
             "default": false
+        },
+        "titleColor": {
+            "type": "string",
+            "default": ""
+        },
+        "titleFontSize": {
+            "type": "number",
+            "default": 0
+        },
+        "titleFontFamily": {
+            "type": "string",
+            "default": ""
+        },
+        "titlePadding": {
+            "type": "number",
+            "default": 16
+        },
+        "contentColor": {
+            "type": "string",
+            "default": ""
+        },
+        "contentFontSize": {
+            "type": "number",
+            "default": 0
+        },
+        "contentFontFamily": {
+            "type": "string",
+            "default": ""
+        },
+        "contentPadding": {
+            "type": "number",
+            "default": 16
+        },
+        "itemSpacing": {
+            "type": "number",
+            "default": 8
+        },
+        "selectedIcon": {
+            "type": "string",
+            "default": "chevron"
+        },
+        "layoutMode": {
+            "type": "string",
+            "default": "edit"
         }
     },
     "supports": {

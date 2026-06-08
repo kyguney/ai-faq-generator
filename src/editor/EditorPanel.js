@@ -5,9 +5,10 @@
  * UI conditionally based on the current sidebar state (empty, has_faqs, block_inserted).
  */
 import { PluginDocumentSettingPanel } from '@wordpress/editor';
-import { Button, Spinner } from '@wordpress/components';
+import { Button, Spinner, ToggleControl } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 import { useState } from '@wordpress/element';
+import { useEntityProp } from '@wordpress/core-data';
 import { PreviewModal } from './PreviewModal';
 import { useBlockInsertState } from './useBlockInsertState';
 import './editor.scss';
@@ -42,6 +43,15 @@ function EditorPanel() {
 
 	// Consume the block-insert state machine hook.
 	const [ state, actions ] = useBlockInsertState( postId, postType );
+
+	// Per-post schema toggle via post meta.
+	// Meta stores '1' (enabled) or '0' (disabled). Absent = enabled by default.
+	const [ meta, setMeta ] = useEntityProp( 'postType', postType, 'meta', postId );
+	const enableSchema = meta?.[ '_aifaq_enable_schema' ] !== '0';
+
+	const setEnableSchema = ( value ) => {
+		setMeta( { ...meta, _aifaq_enable_schema: value ? '1' : '0' } );
+	};
 
 	// Do not render if post type does not support custom-fields.
 	if ( ! supportsCustomFields ) {
@@ -140,6 +150,12 @@ function EditorPanel() {
 						</div>
 					</>
 				) }
+
+				<ToggleControl
+					label="Enable FAQ Schema"
+					checked={ enableSchema }
+					onChange={ setEnableSchema }
+				/>
 			</div>
 
 			{ isModalOpen && (

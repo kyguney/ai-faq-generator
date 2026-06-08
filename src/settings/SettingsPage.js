@@ -206,6 +206,7 @@ function SettingsPage() {
 							max={ 20 }
 							step={ 1 }
 						/>
+
 					</PanelBody>
 				</Panel>
 

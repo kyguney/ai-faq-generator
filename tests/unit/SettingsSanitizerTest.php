@@ -38,12 +38,12 @@ class SettingsSanitizerTest extends TestCase
             Settings::ALLOWED_PROVIDERS
         );
         $this->assertSame([
-            'provider'    => 'openai',
-            'api_key'     => '',
-            'model'       => 'gpt-4o',
-            'temperature' => 0.7,
-            'faq_count'   => 5,
-            'base_url'    => 'https://api.openai.com',
+            'provider'      => 'openai',
+            'api_key'       => '',
+            'model'         => 'gpt-4o',
+            'temperature'   => 0.7,
+            'faq_count'     => 5,
+            'base_url'      => 'https://api.openai.com',
         ], Settings::DEFAULTS);
     }
 

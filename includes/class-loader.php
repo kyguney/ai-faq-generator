@@ -77,6 +77,18 @@ class Loader
                 return current_user_can('edit_post', $post_id);
             },
         ]);
+
+        register_meta('post', '_aifaq_enable_schema', [
+            'type'              => 'string',
+            'single'            => true,
+            'show_in_rest'      => true,
+            'sanitize_callback' => function ($value) {
+                return $value ? '1' : '0';
+            },
+            'auth_callback'     => function ($allowed, $meta_key, $post_id) {
+                return current_user_can('edit_post', $post_id);
+            },
+        ]);
     }
 
     /**

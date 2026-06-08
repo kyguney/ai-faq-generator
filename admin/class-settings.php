@@ -16,12 +16,12 @@ class Settings
     const REST_ROUTE = '/settings';
 
     const DEFAULTS = [
-        'provider'    => 'openai',
-        'api_key'     => '',
-        'model'       => 'gpt-4o',
-        'temperature' => 0.7,
-        'faq_count'   => 5,
-        'base_url'    => 'https://api.openai.com',
+        'provider'      => 'openai',
+        'api_key'       => '',
+        'model'         => 'gpt-4o',
+        'temperature'   => 0.7,
+        'faq_count'     => 5,
+        'base_url'      => 'https://api.openai.com',
     ];
 
     const ALLOWED_PROVIDERS = [
@@ -85,13 +85,13 @@ class Settings
         $has_api_key = !empty($settings['api_key']);
 
         $response = [
-            'provider'    => $settings['provider'],
-            'api_key'     => $has_api_key ? $this->mask_api_key($settings['api_key']) : '',
-            'model'       => $settings['model'],
-            'temperature' => (float) $settings['temperature'],
-            'faq_count'   => (int) $settings['faq_count'],
-            'base_url'    => $settings['base_url'],
-            'has_api_key' => $has_api_key,
+            'provider'      => $settings['provider'],
+            'api_key'       => $has_api_key ? $this->mask_api_key($settings['api_key']) : '',
+            'model'         => $settings['model'],
+            'temperature'   => (float) $settings['temperature'],
+            'faq_count'     => (int) $settings['faq_count'],
+            'base_url'      => $settings['base_url'],
+            'has_api_key'   => $has_api_key,
         ];
 
         return new \WP_REST_Response($response, 200);
@@ -115,13 +115,13 @@ class Settings
         $response = [
             'success'  => true,
             'settings' => [
-                'provider'    => $sanitized['provider'],
-                'api_key'     => $has_api_key ? $this->mask_api_key($sanitized['api_key']) : '',
-                'model'       => $sanitized['model'],
-                'temperature' => (float) $sanitized['temperature'],
-                'faq_count'   => (int) $sanitized['faq_count'],
-                'base_url'    => $sanitized['base_url'],
-                'has_api_key' => $has_api_key,
+                'provider'      => $sanitized['provider'],
+                'api_key'       => $has_api_key ? $this->mask_api_key($sanitized['api_key']) : '',
+                'model'         => $sanitized['model'],
+                'temperature'   => (float) $sanitized['temperature'],
+                'faq_count'     => (int) $sanitized['faq_count'],
+                'base_url'      => $sanitized['base_url'],
+                'has_api_key'   => $has_api_key,
             ],
         ];
 

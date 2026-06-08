@@ -38,7 +38,16 @@ class JSON_LD_Generator
             return;
         }
 
-        $raw_meta = get_post_meta(get_the_ID(), '_aifaq_generated_faqs', true);
+        $post_id = get_the_ID();
+
+        // Per-post toggle: skip schema if explicitly disabled for this post.
+        // Meta stores '1' (enabled) or '0' (disabled). Empty string = not set = enabled.
+        $enable_schema = get_post_meta($post_id, '_aifaq_enable_schema', true);
+        if ($enable_schema === '0') {
+            return;
+        }
+
+        $raw_meta = get_post_meta($post_id, '_aifaq_generated_faqs', true);
 
         if (!is_string($raw_meta) || $raw_meta === '') {
             return;

@@ -20,8 +20,8 @@ AI FAQ Generator automatically creates frequently asked question content from yo
 **Features:**
 
 - **AI-Powered Generation** — Generate FAQs from post title and content using any OpenAI-compatible provider (OpenAI, OpenRouter, Ollama, DeepSeek, LocalAI, LM Studio)
-- **Gutenberg Block** — Display FAQs in posts/pages using the built-in FAQ block with accordion style
-- **SEO Schema** — Automatically output FAQPage JSON-LD structured data for search engine visibility
+- **Gutenberg Block** — Display FAQs in posts/pages using the built-in FAQ block with accordion style, visual preview, and inspector controls
+- **SEO Schema** — Automatically output FAQPage JSON-LD structured data for AI search and GEO visibility
 - **Configurable** — Control model, temperature, and FAQ count from the settings panel
 - **Developer Friendly** — Pluggable AI provider architecture, service-based design, comprehensive test coverage
 
@@ -62,10 +62,10 @@ Free users can generate up to 5 FAQs per generation. Upgrade to Pro for unlimite
 ```
 ai-faq-generator/
 ├── admin/                    # Admin settings pages
-├── blocks/                   # Gutenberg block
+├── blocks/                   # Gutenberg block (faq-accordion)
 ├── includes/
 │   ├── interfaces/          # AI provider interface
-│   ├── services/            # Prompt builder, response parser
+│   ├── services/            # Prompt builder, response parser, FAQ generator, JSON-LD generator
 │   └── class-loader.php     # Autoloader
 ├── tests/                    # PHPUnit test suite
 └── ai-faq-generator.php      # Main plugin file
@@ -77,6 +77,7 @@ ai-faq-generator/
 - **OpenAIClient** — OpenAI-compatible API client implementation
 - **Prompt_Builder** — Stateless service that constructs prompt strings from post data
 - **FAQ_Generator** — Orchestrates the generation workflow using provider + builder
+- **JSON_LD_Generator** — Outputs FAQPage JSON-LD schema in document head for SEO/AI search
 
 ---
 
@@ -90,8 +91,13 @@ ai-faq-generator/
 - OpenAI-compatible API client (OpenAI, OpenRouter, Ollama, DeepSeek, LocalAI, LM Studio)
 - Prompt builder service (stateless, deterministic)
 - FAQ response parser (markdown fence stripping, JSON validation)
-- Gutenberg FAQ block
-- FAQPage JSON-LD schema output
+- FAQ generator service with comprehensive test suite
+- Gutenberg FAQ block with accordion style
+- FAQ block visual preview mode
+- FAQ block inspector panel controls (colors, icons, borders, spacing)
+- FAQ block theme support with CSS custom properties
+- FAQ block accessibility enhancements (ARIA attributes, live regions)
+- FAQPage JSON-LD schema output for AI search/GEO
 
 ---
 

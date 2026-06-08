@@ -83,6 +83,14 @@ $afg_test_current_post_id = 42;
 global $afg_test_enqueued_styles;
 $afg_test_enqueued_styles = [];
 
+/** @var bool */
+global $afg_test_is_singular;
+$afg_test_is_singular = true;
+
+/** @var array<string, mixed> In-memory post meta values store for get_post_meta */
+global $afg_test_post_meta_values;
+$afg_test_post_meta_values = [];
+
 /** @var array<int, array<string, mixed>> */
 global $afg_test_localized_scripts;
 $afg_test_localized_scripts = [];
@@ -94,6 +102,14 @@ if (!function_exists('is_admin')) {
     {
         global $afg_test_is_admin;
         return $afg_test_is_admin ?? true;
+    }
+}
+
+if (!function_exists('is_singular')) {
+    function is_singular(): bool
+    {
+        global $afg_test_is_singular;
+        return $afg_test_is_singular ?? true;
     }
 }
 
@@ -754,6 +770,15 @@ if (!function_exists('update_post_meta')) {
     }
 }
 
+if (!function_exists('get_post_meta')) {
+    function get_post_meta(int $post_id, string $meta_key, bool $single = false)
+    {
+        global $afg_test_post_meta_values;
+        $key = "{$post_id}_{$meta_key}";
+        return $afg_test_post_meta_values[$key] ?? '';
+    }
+}
+
 if (!function_exists('wp_json_encode')) {
     function wp_json_encode($data, int $options = 0, int $depth = 512)
     {
@@ -903,4 +928,8 @@ require_once AFG_PLUGIN_PATH . 'blocks/faq-accordion/render.php';
 // ─── Load FAQ Accordion Block registration ───────────────────────────────────
 
 require_once AFG_PLUGIN_PATH . 'blocks/faq-accordion/class-faq-accordion-block.php';
+
+// ─── Load JSON-LD Generator service ──────────────────────────────────────────
+
+require_once AFG_PLUGIN_PATH . 'includes/services/class-json-ld-generator.php';
 

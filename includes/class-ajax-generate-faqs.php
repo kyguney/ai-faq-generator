@@ -71,7 +71,7 @@ class Ajax_Generate_Faqs
         }
 
         // 5. Store FAQ data as post meta
-        $encoded_faqs = wp_json_encode($faqs);
+        $encoded_faqs = wp_json_encode($faqs, JSON_UNESCAPED_UNICODE);
         $updated = update_post_meta($post_id, '_aifaq_generated_faqs', $encoded_faqs);
 
         // update_post_meta returns false both on failure AND when the value is unchanged.

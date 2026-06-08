@@ -27,6 +27,7 @@ class Loader
             'WPBits\\AiFaqGenerator\\Includes\\Services\\Faq_Generator' => AFG_PLUGIN_PATH . 'includes/services/class-faq-generator.php',
             'WPBits\\AiFaqGenerator\\Includes\\Services\\Faq_Parser' => AFG_PLUGIN_PATH . 'includes/services/class-faq-parser.php',
             'WPBits\\AiFaqGenerator\\Includes\\Ajax_Generate_Faqs' => AFG_PLUGIN_PATH . 'includes/class-ajax-generate-faqs.php',
+            'WPBits\\AiFaqGenerator\\Includes\\Services\\JSON_LD_Generator' => AFG_PLUGIN_PATH . 'includes/services/class-json-ld-generator.php',
         ];
     }
 
@@ -50,6 +51,10 @@ class Loader
         // because REST API requests don't pass is_admin() check.
         $settings = new Settings();
         $settings->init();
+
+        // Initialize JSON-LD structured data output (frontend).
+        $json_ld_generator = new Services\JSON_LD_Generator();
+        $json_ld_generator->init();
 
         // Initialize admin-only functionality
         if (is_admin()) {
